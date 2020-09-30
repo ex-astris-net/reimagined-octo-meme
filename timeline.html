@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+  <title> </title>
+
+  </head>
+
+  <body>
+
+  <div id="timeline_shell">
+
+    <div id="control_panel"> </div>
+
+    <div id="timeline">loading...</div>
+
+  </div>
+
+  <script type="text/javascript">
+
+    var timelineYears;      // all the json
+    var yearsSet = {};
+    var categorySet = {};
+    var scopeSet = {};
+    var arcSet = {};
+    var characterSet = {};
+
+    arcSet['(all arcs)'] = true;
+    characterSet['(all characters)'] = true;
+
+    $(document).ready(function() {
+      $('#control_panel div.container input').bind('click', expandDropdown);
+      $('body').click(collapseDropdown);
+
+      $('#year_selector').change(applyYearChange);
+      $('#category_selector').change(applyCategoryChange);
+      $('#arc_selector').change(applyFilters);
+      $('#char_selector').change(applyFilters);
+      $('#expand_all').change(toggleAllDescs);
+
+      $('#year_selector').trigger('change');
+      $('#category_selector').trigger('change');
+    });
+
+    function expandDropdown() {
+      var selector = $(this).next();
+      selector.addClass('expanded');
+    }
+
+    function collapseDropdown() {
+      var focused = $(':focus');
+
+      if ($(focused).attr("id") == "year_selector" ||
+        $(focused).attr("id") == "category_selector" ||
+        $(focused).attr("id") == "category_chosen" ||
+        $(focused).attr("id") == "year_chosen") {
+      }
+      else {
+        $('select').removeClass("expanded");
+      }
+    }
+
+    function updateField(chosenField) {
+      var selectedOpts = chosenField.next().val();
+      chosenField.val(selectedOpts.join(", "));
+    }
+
+    function applyFilters() {
+      var filterString = "";
+
+      if ($('#arc_selector').val() !== '(all arcs)')
+        filterString += "." + $('#arc_selector').val();
+
+      if ($('#char_selector').val() !== '(all characters)')
+        filterString += "._" + $('#char_selector').val();
+
+      $('#timeline dl').hide();
+      $('#timeline dl' + filterString).fadeIn();
+
+      $('#timeline dl.timeline_header').fadeIn();
+    }
+
+    function applyYearChange() {
+      var years = $('#year_selector').val();
+
+      resetTimeline();
+      var timelineRoot = $('#timeline');
+
+      if (!years)
+        return;
+
+      for (var i = 0; i < years.length; i++) {
+        var year = years[i];
+        timelineRoot.append(makeYear(timelineYears[year]));
+      }
+
+      var chosenField = $('#year_selector').prev();
+      updateField(chosenField);
+
+      // binds because new timeline was built
+      $('#timeline dl dd.item').click(toggleDesc);
+      $('#timeline dt').click(toggleDates);
+      $('#timeline a').attr("target", "_blank");
+
+      filterCategories();
+      applyFilters();
+    }
+
+
+    function filterCategories() {
+      var categories = $('#category_selector').val();
+
+      var timelineSubset = $('#timeline dl');
+      for (var i = 0; i < timelineSubset.length; i++) {
+
+        if (!inACategory(timelineSubset[i], categories))
+          timelineSubset[i].remove();
+      }
+
+      var chosenField = $('#category_selector').prev();
+      updateField(chosenField);
+    }
+
+    function applyCategoryChange() {
+      $('#year_selector').trigger('change');
+
+      filterCategories(this);
+      applyFilters();
+    }
+
+    function inACategory(event, categories) {
+      for (var i = 0; i < categories.length; i++) {
+        if ($(event).hasClass("CAT_" + categories[i]) || $(event).hasClass("timeline_header"))
+          return true;
+      }
+
+      return false;
+    }
+
+    function resetTimeline() {
+      var timelineRoot = $('#timeline');
+      timelineRoot.empty();
+
+      var divItem = $('<div>');
+
+      var dlItem = $('<dl class="timeline_header">');
+
+      var dtItem = $('<dt>');
+      var rlDate = $('<p class="date_rl">');
+      rlDate.append("earth date");
+      dtItem.append(rlDate);
+
+      var argoDate = $('<p class="date_argo">');
+      argoDate.append("argo date");
+      dtItem.append(argoDate);
+      dlItem.append(dtItem);
+
+      var ddItem = $('<dd>');
+      ddItem.addClass("item");
+      ddItem.append("occurrence");
+      dlItem.append(ddItem);
+
+      var ddLinks = $('<dd>');
+      ddLinks.addClass("more");
+      ddLinks.append("more info");
+      dlItem.append(ddLinks);
+
+      divItem.append(dlItem);
+
+      timelineRoot.append(divItem);
+      return timelineRoot;
+    }
+
+    function toggleDates() {
+      $('.date_argo').toggle();
+      $('.date_rl').toggle();
+    }
+
+    function toggleDesc() {
+      var desc = $(this).children().next();
+      desc.slideToggle();
+    }
+
+    function toggleAllDescs() {
+      if ($(this).is(':checked')) {
+        $('#timeline .desc').slideDown();
+      }
+      else {
+        $('#timeline .desc').slideUp();
+      }
+    }
+
+    function buildPage() {
+      // starter build function
+      // includes creating control panel
+
+      var yearDropdown = makeDropdownContainer("year", yearsSet);
+      $('#control_panel').append(yearDropdown);
+      $('#year_selector option').first().attr("selected", false);
+
+      console.log($('#year_selector option').first());
+
+      var categorySelect = makeDropdownContainer("category", categorySet);
+      $('#control_panel').append(categorySelect);
+
+      var arcDropdown = makeDropdown(arcSet, false);
+      arcDropdown.attr("id", "arc_selector");
+      $('#control_panel').append(arcDropdown);
+
+      var characterDropdown = makeDropdown(characterSet, false);
+      characterDropdown.attr("id", "char_selector");
+      $('#control_panel').append(characterDropdown);
+
+      var expandAll = makeCheckbox();
+      $('#control_panel').append(expandAll);
+    }
+
+    function makeYear(yearItems) {
+      var timelineDiv = $('<div>');
+
+      for (var i = 0; i < yearItems.length; i++) {
+        var itemMarkup = makeItem(yearItems[i]);
+        timelineDiv.append(itemMarkup);
+      }
+
+      return timelineDiv;
+    }
+
+
+    /* markup builders */
+
+    function makeCheckbox() {
+      var div = $('<div>');
+      var checkbox = $('<input type="checkbox">');
+      checkbox.attr("id", "expand_all");
+      var label = $('<label>');
+      label.append(" Expand All");
+
+      div.append(checkbox);
+      div.append(label);
+
+      return div;
+    }
+
+    function makeItem(itemJson) {
+      var dlItem = $('<dl>');
+      dlItem = addContentClasses(dlItem, itemJson);
+
+      var dtItem = $('<dt>');
+      var rlDate = $('<p class="date_rl">');
+      var dateString = itemJson['date'];
+      rlDate.append(dateString);
+      dtItem.append(rlDate);
+
+      var year = parseInt(extractYear(itemJson['date']));
+      year += 399;
+
+      var argoDate = $('<p class="date_argo">');
+      var argoDateStr = itemJson['date'].substr(0, itemJson['date'].length - 4);
+      argoDateStr += (year + "");
+
+      argoDate.append(argoDateStr);
+      dtItem.append(argoDate);
+      dlItem.append(dtItem);
+
+      var ddItem = $('<dd>');
+      ddItem.addClass("item");
+      var pName = $('<p class="name">');
+      pName.append(itemJson['name']);
+      ddItem.append(pName);
+
+      var pDesc = $('<div class="desc">');
+      pDesc.append(itemJson['desc']);
+      ddItem.append(pDesc);
+      dlItem.append(ddItem);
+
+      var ddLinks = $('<dd>');
+      ddLinks.addClass("more");
+      ddLinks.append(makeLinks(itemJson['links']));
+      dlItem.append(ddLinks);
+
+      return dlItem;
+    }
+
+    function containsNoDay(dateString) {
+      if (isNaN(parseInt(dateString.charAt(0))))
+        return true;
+
+      return false;
+    }
+
+    function makeLinks(str) {
+      var htmlStr = str.split("[url=").join("<a href=\"");
+      htmlStr = htmlStr.split("[/url]").join("</a>");
+      htmlStr = htmlStr.split("]").join("\">");
+
+      return htmlStr;
+    }
+
+    function addContentClasses(dlItem, itemJson) {
+
+      // category
+      if (itemJson['category'])
+        dlItem.addClass("CAT_" + itemJson['category'].trim());
+
+      // arcs
+      if (itemJson['arcs']) {
+        var arcs = itemJson['arcs'].split(",");
+        for (var i = 0; i < arcs.length; i++)
+          dlItem.addClass(arcs[i].trim());
+      }
+
+      // characters
+      if (itemJson['characters']) {
+        var characters = itemJson['characters'].split(",");
+        for (var i = 0; i < characters.length; i++)
+          dlItem.addClass("_" + characters[i].trim());
+      }
+
+      return dlItem;
+    }
+
+    function makeDropdownContainer(id, set) {
+      var div = $('<div>');
+      div.attr("tabindex", -1);
+      div.attr("class", "container");
+
+      var textInput = $('<input type="text">');
+      textInput.attr("id", id + "_chosen");
+      textInput.val("(select " + id + ")");
+      div.append(textInput);
+
+      var dropdown = makeDropdown(set, true);
+      dropdown.attr("id", id + "_selector");
+      div.append(dropdown);
+
+      return div;
+    }
+
+    function makeDropdown(set, multiselect) {
+      var select = $('<select>');
+
+      if (multiselect)
+        select.attr("multiple", true);
+
+      // make dropdown based on keys, so we can alphabetize.  >_>
+      var setKeys = (Object.keys(set)).sort();
+
+      for (var i = 0; i < setKeys.length; i++) {
+        var key = setKeys[i];
+
+        var option = $('<option>');
+        option.val(key);
+        option.html(key);
+
+        if (multiselect)
+          option.attr('selected', true);
+
+        select.append(option);
+      }
+
+      return select;
+    }
+
+    // THE callback function
+    function sheetLoaded(spreadsheetdata) {
+      console.log(spreadsheetdata);
+
+      //var json = spreadsheetdata.feed.entry;
+      //var json = JSON.parse(spreadsheetdata.values);
+
+      var json = spreadsheetdata.values.map(arr => JSON.parse(arr[0]));
+      var jsonYearsObj = {};
+
+      // populate yearsSet
+      /* HARDCODED YEAR HERE FIX EVERY JAN */
+      for (var i = 2010; i <= 2020; i++) {
+          yearsSet[i + ""] = true;
+          jsonYearsObj[i] = [];
+      }
+
+      yearsSet["2009_and_earlier"] = true;
+      jsonYearsObj["2009_and_earlier"] = [];
+
+      for (var i = 0; i < json.length; i++) {
+
+        // to separate the timeline by year
+        //var temp = JSON.parse(json[i].content.$t);
+        var temp = json[i];
+        var tempDate = temp['date'];
+
+        var year = extractYear(temp['date']);
+      if (parseInt(year) <= 2009)
+        year = "2009_and_earlier";
+        jsonYearsObj[year].push(temp);
+
+        // add to sets
+        if (temp['category'])
+          addToSet(categorySet, temp['category']);
+
+        if (temp['arcs'])
+          addToSet(arcSet, temp['arcs']);
+
+        if (temp['characters'])
+          addToSet(characterSet, temp['characters']);
+      }
+
+      timelineYears = jsonYearsObj;
+
+      buildPage();
+    }
+
+    function extractYear(dateStr) {
+      var year = dateStr.substr(dateStr.length - 4);
+      return year;
+    }
+
+    function addToSet(setObj, setJson) {
+      var values = setJson.split(",");
+      for (var i = 0; i < values.length; i++) {
+        var temp = values[i].trim();
+
+        if (temp != "")
+          setObj[temp] = true;
+      }
+    }
+
+    function getMonthName(num) {
+      // ugh, really?
+
+      switch (num) {
+        case 0: return "Jan";
+        case 1: return "Feb";
+        case 2: return "Mar";
+        case 3: return "Apr";
+        case 4: return "May";
+        case 5: return "Jun";
+        case 6: return "Jul";
+        case 7: return "Aug";
+        case 8: return "Sep";
+        case 9: return "Oct";
+        case 10: return "Nov";
+        case 11: return "Dec";
+        default: return "ERR";
+      }
+    }
+
+  </script>
+
+
+  <script src="https://sheets.googleapis.com/v4/spreadsheets/13LPwVzGsFBB28cs-1W4apUI8Gc750koyqvL4Ut-0xQc/values/js!A1:B?key=AIzaSyCfMbT676HHWJRL-EnW5LuQXRywpheDVeE&alt=json&callback=sheetLoaded"></script>
+
+</body>
+</html>
