@@ -420,32 +420,27 @@ document.Ausgabe.Erdenzeit.value = monatmod(DoY) + " " + Jahr + fOutT(Stunde,Min
 }
 //]]>
 </script>
-<span style="font-family: 'Fjalla One'; font-size: 24px; color: #dd9323;">STARDATE CALCULATOR</span><br />
-<span style="font-size: 10px;">The code for the following tools was created by <a href="http://www.hillschmidt.de/gbr/sternenzeit.htm">Andreas Schmidt</a>. The internal math provided by Andreas Schmidt <i>does</i> account for leap years.<br />
-The version below has been modified for use by the 38th Fleet 'Argo' to reflect the in-game time for Star Trek Online with a +399 year boost to reflect the 2010 release with in-game year of 2409, and for clarity and formatting.</span>
-<br /><br />
+<h1 style="font-family: 'Fjalla One'; font-size: 24px; color: #dd9323;">STARDATE CALCULATOR</h1>
+<p style="font-size: 10px; line-height:1.5;">The code for the following tools was created by <a href="http://www.hillschmidt.de/gbr/sternenzeit.htm">Andreas Schmidt</a>. The internal math provided by Andreas Schmidt <i>does</i> account for leap years.<br />
+The version below has been modified for use by the 38th Fleet 'Argo' to reflect the in-game time for Star Trek Online with a +399 year boost to reflect the 2010 release with in-game year of 2409, and for clarity and formatting.</p>
 
-<hr /><br /><br />
+<hr />
 
+<h2 style="font-family: play; font-size: 18px; color: #239edd;">Stardate to Calendar Date</h2>
+<p>Use this tool to converts stardates to in-character calendar dates. Type in the stardate you want to convert and press the "Convert" button. The calendar date will be displayed in the box below.<br />
+	Note: Stardates prior to January 1, 2333 (Stardate 10000) will not convert properly.</p>
 
-<span style="font-family: play; font-size: 18px; color: #239edd;">Stardate to Calendar Date</span><br />
-<span>
-	Use this tool to converts stardates to in-character calendar dates. Type in the stardate you want to convert and press the "Convert" button. The calendar date will be displayed in the box below.<br />
-	Note: Stardates prior to January 1, 2333 (Stardate 10000) will not convert properly.<br />
-</span>
-<br />
 <form name="Ausgabe">
   <input name="Sprache" value="E" type="hidden" />
   <table summary="Eingabefeld Sternenzeit">
     <tbody>
       <tr>
-        <td style="text-align:right">Stardate:&nbsp;</td>
+        <td style="text-align:right;">Stardate:&nbsp;</td>
         <td><input size="20" name="Sternenzeit" type="text" /></td>
         <td>
 			<input value="Convert" onclick="javascript:EarthTime()" style="font-weight:bold" type="button" />
 		</td>
       </tr>
-	  <tr><td colspan="2">&nbsp;</td></tr>
 	  <tr>
 		<td style="text-align:right; font-weight: bold;">Calendar Date:&nbsp;</td>
 		<td colspan="3">
@@ -453,17 +448,13 @@ The version below has been modified for use by the 38th Fleet 'Argo' to reflect 
 		</td>
     </tbody>
   </table>
-</form><br /><br />
+</form>
 
-<hr /><br /><br />
+<hr />
 
-
-<span style="font-family: play; font-size: 18px; color: #239edd;">IRL Calendar Date to Stardate</span><br />
-<span>
-	Use this tool to create a stardate based on the date in real life (IRL). Select the IRL date that you want to convert and press the "Convert" button. The stardate will be displayed in the box below. The default values will give you the <b>current</b> stardate (based on your computer's system clock). Note: IRL dates prior to January 1, 1934 (Stardate 10000) will not convert properly.<br />
-	This converter is NOT for in-character calendar dates; if you are entering in-character years (ie. 2415), use the tool below.<br />
-</span>
-<br />
+<h2 style="font-family: play; font-size: 18px; color: #239edd;">IRL Calendar Date to Stardate</h2>
+<p>Use this tool to create a stardate based on the date in real life (IRL). Select the IRL date that you want to convert and press the "Convert" button. The stardate will be displayed in the box below. The default values will give you the <b>current</b> stardate (based on your computer's system clock). Note: IRL dates prior to January 1, 1934 (Stardate 10000) will not convert properly.</p>
+<p>This converter is NOT for in-character calendar dates; if you are entering in-character years (ie. 2415), use the tool below.</p>
 
 <form name="Eingabe">
   <input name="Sprache" value="E" type="hidden" />
@@ -635,17 +626,13 @@ The version below has been modified for use by the 38th Fleet 'Argo' to reflect 
   </table> <br />
    <span style="font-weight: bold;">Stardate:</span>
   <input name="Sternendatum" readonly="readonly" type="text" />
-</form><br /><br />
+</form>
 
-<hr /><br /><br />
+<hr />
 
-
-<span style="font-family: play; font-size: 18px; color: #239edd;">In-Character Calendar Date to Stardate</span><br />
-<span>
-	Use this tool to create a stardate based on an in-character calendar date. Select the in-character date that you want to convert and press the "Convert" button. The stardate will be displayed in the box below. The default values will give you the <b>current</b> stardate (based on your computer's system clock). Note: In-Character dates prior to January 1, 2333 (Stardate 10000) will not convert properly.<br />
-	This converter is NOT for IRL calendar dates; if you are entering a date in the present day (ie. 2016), use the tool above.<br />
-</span>
-<br />
+<h2 style="font-family: play; font-size: 18px; color: #239edd;">In-Character Calendar Date to Stardate</h2>
+<p>Use this tool to create a stardate based on an in-character calendar date. Select the in-character date that you want to convert and press the "Convert" button. The stardate will be displayed in the box below. The default values will give you the <b>current</b> stardate (based on your computer's system clock). Note: In-Character dates prior to January 1, 2333 (Stardate 10000) will not convert properly.</p>
+<p>This converter is NOT for IRL calendar dates; if you are entering a date in the present day (ie. 2016), use the tool above.</p>
 
 <form name="EingabeIC">
   <input name="Sprache" value="E" type="hidden" />
