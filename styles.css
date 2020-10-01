@@ -1,0 +1,119 @@
+body {
+   background-color: #0d1118;
+}
+
+#timeline_shell * { margin: 0; padding: 0; }
+
+#timeline_shell {
+    position: relative;
+	background-color: #0d1118;
+	color: #eee;
+}
+
+#timeline_shell #timeline { font-family: "Fjalla One", sans-serif; }
+
+#timeline_shell div.desc, #timeline_shell label { font-family: "Arial", sans-serif; font-size: 14px; }
+
+#timeline_shell ul li {
+	display: table-row;
+	border: 1px solid #fff;
+}
+
+#timeline_shell dt, #timeline_shell dd {
+	display: table-cell;
+
+	border-width: 0 5px 5px 0;
+	border-style: solid;
+	border-color: #0d1118;
+
+	padding: 5px;
+	background-color: #aaa;
+	color: #000;
+}
+
+#timeline_shell dt { width: 100px; }
+#timeline_shell dt p.date_rl { display: none; }
+
+#timeline_shell #timeline dd.item { font-size: 14px; }
+#timeline_shell #timeline p.name { font-size: 16px; }
+#timeline_shell dt, #timeline_shell div.desc { font-size: 13px; }
+#timeline_shell dt, #timeline_shell dd.more { font-size: 14px; }
+
+#timeline_shell dd.item { width: 500px; }
+#timeline_shell dd.item div.desc { display: none; }
+#timeline_shell dt:hover, #timeline_shell dd.item:hover { cursor: pointer; }
+
+#timeline_shell .timeline_header { font-family: "Ubuntu Mono", sans-serif; font-weight: bold; }
+#timeline_shell dd.more { width: 250px; font-family: "Ubuntu Mono", sans-serif; letter-spacing: -1px; }
+#timeline_shell dd.more a { color: #000; text-decoration: none; }
+#timeline_shell dd.more a:hover { text-decoration: underline; }
+
+#timeline_shell #timeline {
+	margin-top: 60px;
+	margin-left: 10px;
+}
+
+#timeline_shell #control_panel {
+	background-color: #374d74;
+    position: absolute;
+    top: -60px;
+    z-index: 10;
+
+    width: 98%;
+    height: 25px;
+    padding: 10px;
+}
+
+#timeline_shell #timeline {
+    padding-bottom: 200px;
+    height: 800px;
+    overflow-y: scroll;
+}
+
+#timeline_shell #timeline dl.timeline_header dt,
+#timeline_shell #timeline dl.timeline_header dd {
+	background-color: #666;
+	font-style: italic;
+	color: #fff;
+}
+
+#timeline_shell #control_panel input, #timeline_shell #control_panel select {
+	font-size: 14px;
+}
+
+#timeline_shell #control_panel div.container, #timeline_shell #control_panel select {
+	margin-right: 15px;
+	width: 200px;
+	float: left;
+}
+
+#timeline_shell #control_panel div.container input {
+	display: block;
+	width: 200px;
+}
+
+#timeline_shell #control_panel div.container select {
+	width: 204px;
+}
+
+#timeline_shell #control_panel div.container option {
+	padding-left: 2em;
+	color: #999;
+}
+
+#timeline_shell #control_panel div.container select.expanded {
+	display: block;
+	height: 86px;
+}
+
+#timeline_shell #control_panel div.container select {
+	display: none;
+}
+
+
+#timeline_shell dl.CAT_sto dt, #timeline_shell .CAT_sto dd { background-color: #cd6363; }
+#timeline_shell dl.CAT_social dt, #timeline_shell .CAT_social dd { background-color: #917691; }
+#timeline_shell dl.CAT_fleet dt, #timeline_shell .CAT_fleet dd { background-color: #3791a6; }
+#timeline_shell dl.CAT_recurring dt, #timeline_shell .CAT_recurring dd { background-color: #b1957a; }
+
+#timeline_shell #char_selector { display: none; }

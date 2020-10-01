@@ -6,6 +6,8 @@
   <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
   <title> </title>
   <script src="jquery.min.js"></script>
+  <link rel="stylesheet" href="styles.css">
+
   </head>
 
   <body>
@@ -366,13 +368,11 @@
 
     // THE callback function
     function sheetLoaded(spreadsheetdata) {
-      console.log(spreadsheetdata);
+      //console.log(spreadsheetdata.feed.entry);
 
-      //var json = spreadsheetdata.feed.entry;
-      //var json = JSON.parse(spreadsheetdata.values);
-
-      var json = spreadsheetdata.values.map(arr => JSON.parse(arr[0]));
+      var json = spreadsheetdata.feed.entry.map(obj => JSON.parse(obj.content.$t));
       var jsonYearsObj = {};
+      //console.log(json);
 
       // populate yearsSet
       /* HARDCODED YEAR HERE FIX EVERY JAN */
@@ -450,7 +450,7 @@
   </script>
 
 
-  <script src="https://sheets.googleapis.com/v4/spreadsheets/13LPwVzGsFBB28cs-1W4apUI8Gc750koyqvL4Ut-0xQc/values/js!A1:B?key=AIzaSyCfMbT676HHWJRL-EnW5LuQXRywpheDVeE&alt=json&callback=sheetLoaded"></script>
+  <script src="https://spreadsheets.google.com/feeds/cells/1dS6FzAJtNP7mHgqnRw-yum2hE_3zlT--iWa16FhfcHs/1/public/values?alt=json&callback=sheetLoaded"></script>
 
 </body>
 </html>
