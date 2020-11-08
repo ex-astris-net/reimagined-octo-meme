@@ -23,6 +23,7 @@
       width: 250px;
       float: left;
       background-color: #222;
+      border-radius: 25px;
     }
 
     #controls input { padding: 0.25em; }
@@ -99,6 +100,7 @@
     <input type="checkbox" value="timestamps" checked="checked" /> <span>Timestamps</span><br/>
     <input type="checkbox" value="handles" checked="checked" /> <span>Handles</span><br/>
     <input type="checkbox" value="newlines" checked="checked" /> <span>Line Breaks</span><br/>
+    <input type="checkbox" value="entities" checked="checked"/> <span>Replace Entities (Discourse)</span><br/>
   </fieldset>
 
   <fieldset id="filter_channels" class="filters">
@@ -132,9 +134,12 @@ $(document).ready(function() {
   $('#controls #options input').click(update);
 });
 
-var HANDLE_REGEX = /@[\w-#.]+/mg;
-var CHANNEL_REGEX = /\[[\w: -]+\]( To )?/mg;
-var TIMESTAMP_REGEX = /\[(\d+\/\d+ )?\d+:\d+\] /mg;
+var HANDLE_REGEX = /@[\w\-#.]+/mg;
+var CHANNEL_REGEX = /\[[\w -]+\]( To )?/mg;
+//var CHANNEL_REGEX = /\[[\w: -]+\]( To )?/mg;
+// commented regex is the original working stuff until
+// sto broke line outputs with 1 character cutoffs.
+var TIMESTAMP_REGEX = /^\[(\d+\/\d+ )?\d+:\d+\] /mg;
 var LINEBREAK_REGEX = /\n\n/mg;
 
 var HEX_COLORS = ["#84c8f3", "#b2f3b2", "#ffff99", "#239edd", "#6cdd23", "#dd9323", "#ffffff", "#f3b2b1", "#ddd123", "#db4d4d"];
@@ -206,14 +211,24 @@ function update() {
     processed = stripHandles(processed);
   if (!$('#controls input[value="timestamps"]').prop('checked'))
     processed = stripTimestamps(processed);
-
   if (!$('#controls input[value="newlines"]').prop('checked'))
     processed = doNameBreaking(processed);
+  if ($('#controls input[value="entities"]').prop('checked'))
+    processed = replaceEntities(processed);
+
+  console.log(processed);
 
   processed = applyEmoteColor(processed, channelColorMap);
 
-  $('#main #output').html(processed);
+  $('#main #output').text(processed);
   $('#main #preview').html(htmlify(processed));
+}
+
+function replaceEntities(raw) {
+  var escaped = raw.replace(new RegExp("<", "mg"), "&lt;");
+  escaped = escaped.replace(new RegExp(">", "mg"), "&gt;");
+
+  return escaped;
 }
 
 function scriptMode(raw) {
