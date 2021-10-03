@@ -35,6 +35,20 @@
     characterSet['(all characters)'] = true;
 
     $(document).ready(function() {
+      // $('#control_panel div.container input').bind('click', expandDropdown);
+      // $('body').click(collapseDropdown);
+      //
+      // $('#year_selector').change(applyYearChange);
+      // $('#category_selector').change(applyCategoryChange);
+      // $('#arc_selector').change(applyFilters);
+      // $('#char_selector').change(applyFilters);
+      // $('#expand_all').change(toggleAllDescs);
+      //
+      // $('#year_selector').trigger('change');
+      // $('#category_selector').trigger('change');
+    });
+
+    function initAll() {
       $('#control_panel div.container input').bind('click', expandDropdown);
       $('body').click(collapseDropdown);
 
@@ -46,7 +60,7 @@
 
       $('#year_selector').trigger('change');
       $('#category_selector').trigger('change');
-    });
+    }
 
     function expandDropdown() {
       var selector = $(this).next();
@@ -204,7 +218,7 @@
       $('#control_panel').append(yearDropdown);
       $('#year_selector option').first().attr("selected", false);
 
-      console.log($('#year_selector option').first());
+      //console.log($('#year_selector option').first());
 
       var categorySelect = makeDropdownContainer("category", categorySet);
       $('#control_panel').append(categorySelect);
@@ -219,6 +233,9 @@
 
       var expandAll = makeCheckbox();
       $('#control_panel').append(expandAll);
+
+      $('#control_panel div.container input').bind('click', expandDropdown);
+      $('body').click(collapseDropdown);
     }
 
     function makeYear(yearItems) {
@@ -370,11 +387,10 @@
 
     // THE callback function
     function sheetLoaded(spreadsheetdata) {
-      //console.log(spreadsheetdata.feed.entry);
+      //console.log(spreadsheetdata.values);
 
-      var json = spreadsheetdata.feed.entry.map(obj => JSON.parse(obj.content.$t));
+      var json = spreadsheetdata.values.map(obj => JSON.parse(obj));
       var jsonYearsObj = {};
-      //console.log(json);
 
       // populate yearsSet
       /* HARDCODED YEAR HERE FIX EVERY JAN */
@@ -387,7 +403,6 @@
       jsonYearsObj["2009_and_earlier"] = [];
 
       for (var i = 0; i < json.length; i++) {
-
         // to separate the timeline by year
         //var temp = JSON.parse(json[i].content.$t);
         var temp = json[i];
@@ -412,6 +427,7 @@
       timelineYears = jsonYearsObj;
 
       buildPage();
+      initAll();
     }
 
     function extractYear(dateStr) {
@@ -451,8 +467,13 @@
 
   </script>
 
+  <script type="text/javascript">
+    var url = 'https://sheets.googleapis.com/v4/spreadsheets/1dS6FzAJtNP7mHgqnRw-yum2hE_3zlT--iWa16FhfcHs/values/js?alt=json&key=AIzaSyCfMbT676HHWJRL-EnW5LuQXRywpheDVeE';
+    fetch(url).then(response => response.json()).then(data => {
+      sheetLoaded(data);
+    });
+  </script>
 
-  <script src="https://spreadsheets.google.com/feeds/cells/1dS6FzAJtNP7mHgqnRw-yum2hE_3zlT--iWa16FhfcHs/1/public/values?alt=json&callback=sheetLoaded"></script>
 
 </body>
 </html>
