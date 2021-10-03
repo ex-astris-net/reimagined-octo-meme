@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+  <title> </title>
+	<link href="https://fonts.googleapis.com/css?family=Assistant:300" rel="stylesheet">
+  <script src="jquery.min.js"></script>
+
+    <style type="text/css">
+
+    body {
+      background-color: #123;
+      color: #c0c0c0;
+      font-family: Assistant, sans-serif;
+    }
+
+    #controls, #main { padding: 1em; min-height: 50em; }
+
+    #controls {
+      /*position: fixed;  */
+      width: 250px;
+      float: left;
+      background-color: #222;
+      border-radius: 25px;
+    }
+
+    #controls input { padding: 0.25em; }
+
+    #controls fieldset legend { padding: 0 0.5em; }
+
+    #controls fieldset {
+        margin: 1em 0;
+        padding: 0.5em;
+    }
+
+    #controls fieldset.filters {
+        font-size: 1em;
+    }
+
+    #controls dl {
+      display: grid;
+      grid-template-columns: 70px 85px 20px 15px;
+      align-items: center;
+    }
+
+    #controls dl dt, #controls dl dd, #controls dl dd input { font-size: 12px; }
+    #controls dl dd.color_field input {
+      border: 0;
+      background-color: #000;
+      width: 70px;
+    }
+
+    #main {
+      margin-left: 260px;
+    }
+
+    #main h1, #main h2, #main textarea, #main pre { margin: 10px 0 0 25px; }
+    #main textarea, #main pre {
+      padding: 0.5em;
+      width: 500px; height: 100px;
+    }
+    #main textarea {
+      margin-bottom: 20px;
+      background-color: #000;
+      color: #fff;
+    }
+    #main pre {
+      width: 600px;
+      height: auto;
+
+      font-family: Arial, sans-serif;
+      font-size: 0.8em;
+      color: #a4c9d1;
+
+      white-space: pre-wrap;
+    }
+
+    </style>
+
+  </head>
+
+  <body>
+
+<div id="controls">
+  <fieldset>
+    <legend>Theme</legend>
+    <input type="radio" name="colorcode" value="none" checked="checked" /><span> No colors</span><br/>
+    <input type="radio" name="colorcode" value="channel" /><span> Color by Channel</span><br/>
+    <input type="radio" name="colorcode" value="player" checked="checked"/><span> Color by Player</span><br/>
+    <input type="radio" name="colorcode" value="script" /><span> Screenplay Mode</span><br/>
+  </fieldset>
+
+  <input type="submit" value="Process"/>
+
+  <fieldset id="options">
+    <legend>Include</legend>
+    <input type="checkbox" value="channels" checked="checked"/> <span>Channel Names</span><br/>
+    <input type="checkbox" value="timestamps" checked="checked" /> <span>Timestamps</span><br/>
+    <input type="checkbox" value="handles" checked="checked" /> <span>Handles</span><br/>
+    <input type="checkbox" value="newlines" checked="checked" /> <span>Line Breaks</span><br/>
+    <input type="checkbox" value="entities" checked="checked"/> <span>Replace Entities (Discourse)</span><br/>
+  </fieldset>
+
+  <fieldset id="filter_channels" class="filters">
+    <legend>channel filter</legend>
+  </fieldset>
+
+  <fieldset id="filter_players" class="filters">
+    <legend>player filter</legend>
+  </fieldset>
+
+  <span style="color:#222">#ffff99, #dd9edd, #239edd</span>
+</div>
+
+<div id="main">
+  <h1>INPUT</h1>
+  <textarea id="input">(paste transcript here...)</textarea>
+  <h1>OUTPUT</h1>
+  <textarea id="output"></textarea>
+
+  <h2>Preview</h2>
+  <pre id="preview"> </pre>
+
+</div>
+
+<script type="text/javascript">
+
+$(document).ready(function() {
+  $('#input').focus(focusTextarea);
+
+  $('#controls input[value="Process"]').click(processLog);
+  $('#controls #options input').click(update);
+});
+
+var HANDLE_REGEX = /\@[\w\-#.]+/mg;
+var CHANNEL_REGEX = /(?<=,)[\w -.]+?,[\w -.]+?(?=])/mg;
+var CHANNEL_REGEX_2 = /\[(?<=\[)[\w -.]+?,[\w -.]+?(?=])] /mg;
+//var CHANNEL_REGEX = /\[[\w: -]+\]( To )?/mg;
+// commented regex is the original working stuff until
+// sto broke line outputs with 1 character cutoffs.
+var TIMESTAMP_REGEX = /^\[(\d+\/\d+ )?\d+:\d+\] /mg;
+var LINEBREAK_REGEX = /\n\n/mg;
+
+var HEX_COLORS = ["#84c8f3", "#b2f3b2", "#ffff99", "#239edd", "#6cdd23", "#dd9323", "#ffffff", "#f3b2b1", "#ddd123", "#db4d4d"];
+
+var CHANNELS = {"&lt;emote&gt;": true}
+var PLAYERS = {}
+
+function processLog() {
+  var raw = ($('#main #input').val()).trim();
+
+  // 1. grab player names
+  var players = PLAYERS;
+  $.extend(players, parseForPlayers(raw));
+  //console.log(players);
+
+  // 2. grab channel names
+  var channels = CHANNELS;
+  $.extend(channels, parseForChannels(raw));
+  //console.log(channels);
+
+  var channelMap = addLineCounts(raw, CHANNELS);
+  var playerMap = addLineCounts(raw, PLAYERS);
+
+  outputLegend('#filter_channels', channelMap);
+  outputLegend('#filter_players', playerMap);
+
+  update();
+}
+
+function update() {
+  $('#main #output').empty();
+
+  var raw = ($('#main #input').val()).trim();
+
+  raw = reprintMetadata(raw);
+
+  if (getColorTheme() == "script")
+  	raw = scriptMode(raw);
+
+  var rawArray = raw.split("\n");
+  var playerColorMap = fetchColorMap('#filter_players');
+  var channelColorMap = fetchColorMap('#filter_channels');
+
+  for (var i = 0; i < rawArray.length; i++) {
+    var line;
+
+		// handle priority of coloring
+    if (getColorTheme() == "player") {
+      line = colorLine(rawArray[i], channelColorMap);
+      rawArray[i] = line;
+
+      line = colorLine(rawArray[i], playerColorMap);
+      rawArray[i] = line;
+    }
+    else {
+      line = colorLine(rawArray[i], playerColorMap);
+      rawArray[i] = line;
+
+      line = colorLine(rawArray[i], channelColorMap);
+      rawArray[i] = line;
+    }
+  }
+
+  var processed = rawArray.join("\n");
+
+  processed = stripFiltered(processed);
+
+  if (!$('#controls input[value="channels"]').prop('checked'))
+    processed = stripChannels(processed);
+  if (!$('#controls input[value="handles"]').prop('checked'))
+    processed = stripHandles(processed);
+  if (!$('#controls input[value="timestamps"]').prop('checked'))
+    processed = stripTimestamps(processed);
+  if (!$('#controls input[value="newlines"]').prop('checked'))
+    processed = doNameBreaking(processed);
+  if ($('#controls input[value="entities"]').prop('checked'))
+    processed = replaceEntities(processed);
+
+  //console.log(processed);
+
+  processed = applyEmoteColor(processed, channelColorMap);
+
+  $('#main #output').text(processed);
+  $('#main #preview').html(htmlify(processed));
+}
+
+function replaceEntities(raw) {
+  var escaped = raw.replace(new RegExp("<", "mg"), "&lt;");
+  escaped = escaped.replace(new RegExp(">", "mg"), "&gt;");
+
+  return escaped;
+}
+
+function reprintMetadata(raw) {
+  var metadataStr = /\[.*,(.*)?,.*,(.*)?,.*,(.*,.*,.*)?\]/mg;
+  var replacedMetadata = raw.replace(metadataStr, "[$3] $2: ");
+
+  return replacedMetadata;
+}
+
+function scriptMode(raw) {
+	// 1. Change the handles to <name> on local lines
+  var regex = /\[Local] ([\w ]+)@[\w.#-]+: (.*)/mg;
+  var post = raw.replace(regex, "[Local] <$1> $2");
+
+  // 2. Go through all emote lines and insert linebreak on quotations.
+  regex = /(.*)\] ([\w ]+)(@[\w.#-]+)([^"\n]*)"([^"]*)"(.*)/mg;
+  post = post.replace(regex, "$1\] $2$3$4\n$1\] [Local] <$2> $5\n$1\] $2$3$6");
+
+  // 3. Get rid of extra emote lines
+  regex = /\n.*[\w ]+@[\w.#-]+\n/mg;
+  post = post.replace(regex, "\n");
+
+	return post;
+}
+
+function parseForPlayers(raw) {
+  var regex = HANDLE_REGEX;
+  var count = raw.match(regex);
+
+  var itemSet = getUniques(count);
+
+  return itemSet;
+}
+
+function parseForChannels(raw) {
+  var temp = stripTimestamps(raw);
+  var regex = CHANNEL_REGEX;
+  var count = temp.match(regex);
+
+  if (!count) {
+    return {};
+  }
+
+  var itemSet = getUniques(count);
+
+  // var renamedItems = {};
+  // for (item in itemSet) {
+  //   var splitString = item.split(",");
+  //   var newItemStr = splitString[0] + " " + splitString[2];
+  //   renamedItems[newItemStr] = true;
+  // }
+
+  //return renamedItems;
+  return itemSet;
+}
+
+function parseForChannels2(raw) {
+  var temp = stripTimestamps(raw);
+  var regex = CHANNEL_REGEX_2;
+  var count = temp.match(regex);
+
+  if (!count) {
+    return {};
+  }
+
+  var itemSet = getUniques(count);
+
+  return itemSet;
+}
+
+function getUniques(list) {
+  var itemSet = {};
+
+  if (!list) {
+    return {};
+  }
+
+  for (var i = 0; i < list.length; i++)
+    itemSet[list[i]] = true;
+
+  return itemSet;
+}
+
+function stripTimestamps(raw) {
+  var regex = TIMESTAMP_REGEX;
+  var post = raw.replace(regex, "");
+
+  return post;
+}
+
+function stripHandles(raw) {
+  // modified handle regex because of sign ins/outs
+  var regex = /@[\w-#.]+(?!.* has logged)/mg;
+  var post = raw.replace(regex, "");
+
+  return post;
+}
+
+function stripChannels(raw) {
+  var channels = parseForChannels2(raw);
+  var post = raw;
+
+  for (var key in channels) {
+    var regex = key;
+    post = post.replace(new RegExp(regex.replace("[","\\["), 'mg'), "");
+  }
+
+  return post;
+}
+
+function stripFiltered(raw) {
+  var filtered = $('#controls .filters input[type="checkbox"]:not(:checked)');
+
+  for (var i = 0; i < filtered.length; i++) {
+    var token = ($(filtered[i]).val()).substring(7);
+    var regex;
+
+    if (token === "<emote>") {
+      regex = /.*[\w ]+@[\w.#-]+ .*\n\n/mg;
+      raw = raw.replace(regex, "");
+    }
+    else {
+      regex = ".*" + token + ".*(\n\n)?"
+      raw = raw.replace(new RegExp(regex.replace("[","\\["), 'mg'), "");
+    }
+  }
+
+  return raw;
+}
+
+function addLineCounts(raw, map) {
+  var lineTotal = 0;
+
+  for (var key in map) {
+    var regex = new RegExp("\\" + key, 'mg');
+    var count = raw.match(regex);
+
+    if (!count)
+      map[key] = 0;
+    else {
+      map[key] = count.length;
+      lineTotal += count.length;
+    }
+  }
+
+  // get emote lines count
+  // if ("&lt;emote&gt;" in map) {
+  //   var totalLines = raw.match(/\n/g);
+  //   var diff = Math.abs((totalLines.length / 2 + 1) - lineTotal);
+  //   map['&lt;emote&gt;'] = diff;
+  // }
+
+  return map;
+}
+
+function doNameBreaking(raw) {
+  var startIndex = 0;
+  var counter = 0;
+  var lineBefore;
+  var lineAfter;
+
+  do {
+    var nextBreak = raw.indexOf("\n", startIndex);
+    lineBefore = raw.substring(startIndex, nextBreak);
+
+    var breakAfterThat = raw.indexOf("\n", nextBreak + 2);
+    if (breakAfterThat == -1)
+      lineAfter = raw.substring(nextBreak + 2, raw.length);
+    else
+      lineAfter = raw.substring(nextBreak + 2, breakAfterThat);
+
+    var handleA = Object.keys(parseForPlayers(lineBefore));
+    var handleB = Object.keys(parseForPlayers(lineAfter));
+
+    if (handleA.toString() === handleB.toString()) {
+      if (lineBefore.indexOf("[Tell] To") > -1 && lineAfter.indexOf("[Tell] To") > -1)
+        raw = raw.replace(lineBefore + "\n", lineBefore);
+      else if (lineBefore.indexOf("[Tell] To") == -1 && lineAfter.indexOf("[Tell] To") == -1)
+        raw = raw.replace(lineBefore + "\n", lineBefore);
+    }
+
+    startIndex = nextBreak + 2;
+
+    if (breakAfterThat == -1)
+      startIndex = raw.length + 1;
+  }
+  while (startIndex < raw.length);
+
+  return raw;
+}
+
+function outputLegend(id, map) {
+  $('#controls ' + id).empty();
+
+  var legendTag = $('<legend>');
+
+  if (id === "#filter_channels")
+    legendTag.html("channel filter");
+  else
+    legendTag.html("player filter");
+
+  $('#controls ' + id).append(legendTag);
+
+  var colorMap = [];
+  for (var key in map)
+    colorMap.push([key, map[key]]);
+
+  colorMap.sort(function(a, b) {return b[1] - a[1]});
+
+  var colorMapKeys = Object.keys(colorMap);
+
+  for (var i = 0; i < colorMapKeys.length; i++) {
+    if (colorMap[i][0] != "&lt;emote&gt;") {
+      if ((id === "#filter_channels" && getColorTheme() == "channel") ||
+          (id === "#filter_players" && getColorTheme() == "player")) {
+        var item = colorMapKeys[i];
+        colorMap[item][2] = HEX_COLORS[i];
+      }
+    }
+
+    if (getColorTheme() == "script") {
+    	switch (colorMap[i][0]) {
+      	case "&lt;emote&gt;":
+        	colorMap[i][2] = "#989898";
+          break;
+        case "[Local] ":
+        	colorMap[i][2] = "#fff";
+        	break;
+        case "[Fleet] ":
+        	colorMap[i][2] = "#6cdd23";
+        	break;
+      }
+    }
+
+    if (getColorTheme() == "none")
+    	colorMap[i][2] = "";
+  }
+
+  var list = $('<dl>');
+
+  for (var key2 in map) {
+    var dt = $('<dt>');
+    dt.html(key2);
+
+    var hexColor = pullHexColor(key2, colorMap);
+    var dd = $('<dd class="color_field">');
+    dd.html(makeColorField(hexColor));
+
+    var dd2 = $('<dd class="qty">');
+    dd2.html(map[key2]);
+
+    var dd3 = $('<dd class="filter">');
+    var checkbox = $('<input type="checkbox" value="filter_' + key2 + '" checked="checked">');
+    checkbox.click(update);
+    dd3.append(checkbox);
+
+    list.append(dt);
+    list.append(dd);
+    list.append(dd2);
+    list.append(dd3);
+  }
+
+  $('#controls ' + id).append(list);
+}
+
+function makeColorField(hex) {
+  var temp = $('<input type="text">').val(hex);
+  temp.css("color", hex);
+  temp.css("border-color", hex);
+  temp.blur(setFieldColors);
+  temp.blur(update);
+
+  return temp;
+}
+
+function setFieldColors() {
+  var hex = $(this).val();
+  $(this).css("color", hex);
+  $(this).css("border-color", hex);
+}
+
+function pullHexColor(key, map) {
+  for (var i = 0; i < map.length; i++) {
+    var temp = map[i];
+
+    if (temp[0] == key)
+      return temp[2];
+  }
+
+  return -1;
+}
+
+function applyEmoteColor(processed, colorMap) {
+  if (colorMap["&lt;emote&gt;"]) {
+    hex = colorMap["&lt;emote&gt;"];
+    processed = "[color=" + hex + "]" + processed;
+    processed = processed + "[/color]";
+  }
+
+  return processed;
+}
+
+function colorLine(line, colorMap) {
+  var openingTag = "[color=";
+  var closingTag = "[/color]";
+  var hex = -1;
+
+  for (var key in colorMap) {
+    if (line.indexOf(key) > -1 && colorMap[key]) {
+      hex = colorMap[key];
+      break;
+    }
+  }
+
+  if (hex !== -1) {
+    line = openingTag + hex + "]" + line;
+    line += closingTag;
+  }
+
+  return line;
+}
+
+function fetchColorMap(id) {
+  var colorMap = {};
+
+  var items = $('#controls ' + id + ' dl dt');
+  var hexes = $('#controls ' + id + ' dl dd.color_field input');
+
+  for (var i = 0; i < items.length; i++) {
+    var temp = $(items[i]).html();
+    colorMap[temp] = $(hexes[i]).val();
+  }
+
+  return colorMap;
+}
+
+function htmlify(colored) {
+  var regex = /\[color=([^\]]+)\]/mg;
+  var escaped = colored.replace(new RegExp("<", "mg"), "&lt;");
+  escaped = escaped.replace(new RegExp(">", "mg"), "&gt;");
+  var htmlified = escaped.replace(regex, '<span style="color:$1">');
+  var final = htmlified.replace(/\[\/color\]/mg, "</span>");
+
+  return final;
+}
+
+function getColorTheme() {
+  return $('#controls input[name="colorcode"]:checked').val();
+}
+
+function focusTextarea() {
+  $('#input').empty();
+}
+
+</script>
+
+</body>
+</html>
