@@ -44,6 +44,7 @@
       font-family: 'Kelly Slab', cursive;
       font-weight: bold;
       font-size: 18px;
+      color: #fff;
     }
 
     dd {
@@ -51,6 +52,14 @@
       padding: 8px;
 
       font-family: "Open Sans", sans-serif;
+    }
+
+    dt+dd+dd { color: #666; }
+    dd+dd+dd {
+      font-family: 'Kelly Slab', cursive;
+      text-transform: uppercase;
+      font-size: 14px;
+      line-height: 1.7;
     }
 
     .one { background-color: #4d4948; }
@@ -78,7 +87,7 @@
       var eventData = Object.values(data.standard);
 
       eventData.forEach((event, index) => {
-        console.log(event);
+        //console.log(event);
         var colorClass = 'one';
 
         if (index % 2 == 0)
