@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+  <title> </title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Kelly+Slab&family=Open+Sans&display=swap" rel="stylesheet">
+
+  <script src="jquery.min.js"></script>
+
+    <style type="text/css">
+
+    body {
+      background-color: #2e1a16;
+      color: #c0c0c0;
+    }
+
+    dl {
+      display: grid;
+      grid-template-columns: 100px 200px 200px 200px;
+      margin: 2px;
+    }
+
+    dt {
+      grid-column-start: 1;
+      margin: 0;
+      padding: 8px;
+
+      font-family: 'Kelly Slab', cursive;
+      font-weight: bold;
+      font-size: 18px;
+    }
+
+    dd {
+      margin: 0;
+      padding: 8px;
+
+      font-family: "Open Sans", sans-serif;
+    }
+
+    .one { background-color: #4d4948; }
+    .two { background-color: #4d3833; }
+
+    </style>
+
+  </head>
+
+  <body>
+
+    <dl id="event_list"> </dl>
+
+  <script type="text/javascript">
+
+    var url = 'https://api.rdo.gg/events/';
+    fetch(url).then(response => response.json()).then(data => {
+      publish(data);
+    });
+
+    function publish(data) {
+      var eventTimes = Object.keys(data.standard);
+      var eventData = Object.values(data.standard);
+
+      eventData.forEach((event, index) => {
+        console.log(event);
+        var colorClass = 'one';
+
+        if (index % 2 == 0)
+          colorClass = 'two';
+
+        var dt = $('<dt class="' + colorClass + '">').append(eventTimes[index]);
+        $('#event_list').append(dt);
+
+        $('#event_list').append($('<dd class="' + colorClass + '">').append(event.id));
+        $('#event_list').append($('<dd class="' + colorClass + '">').append(event.alt));
+        $('#event_list').append($('<dd class="' + colorClass + '">').append(event.variation));
+      });
+
+    }
+
+  </script>
+
+</body>
+</html>
