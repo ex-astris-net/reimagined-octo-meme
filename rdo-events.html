@@ -17,6 +17,9 @@
     body {
       background-color: #2e1a16;
       color: #c0c0c0;
+
+      font-family: 'Kelly Slab', cursive;
+      line-height: 30px;
     }
 
     p {
@@ -25,41 +28,43 @@
       right: 15px;
     }
 
-    p, a {
-      font-family: 'Kelly Slab', cursive;
-      color: #c0c0c0;
-    }
+    p, a { color: #c0c0c0; }
 
     dl {
       display: grid;
-      grid-template-columns: 100px 200px 200px 200px;
-      margin: 15px;
+      grid-template-columns: 100px 200px 200px 200px 100px;
+
+      margin-left: 30px;
     }
 
     dt {
       grid-column-start: 1;
-      margin: 0;
-      padding: 8px;
+      padding: 3px 10px;
 
-      font-family: 'Kelly Slab', cursive;
       font-weight: bold;
       font-size: 18px;
       color: #fff;
+      line-height: 30px;
     }
 
     dd {
       margin: 0;
-      padding: 8px;
-
+      padding: 3px;
       font-family: "Open Sans", sans-serif;
     }
 
-    dt+dd+dd { color: #666; }
-    dd+dd+dd {
+    dd.alt { color: #666; }
+    dd.variation {
       font-family: 'Kelly Slab', cursive;
       text-transform: uppercase;
       font-size: 14px;
-      line-height: 1.7;
+      line-height: 30px;
+    }
+    dd.pzt {
+      padding-right: 10px;
+      text-align: right;
+      font-family: 'Kelly Slab', cursive;
+      color: goldenrod;
     }
 
     .one { background-color: #4d4948; }
@@ -97,10 +102,28 @@
         $('#event_list').append(dt);
 
         $('#event_list').append($('<dd class="' + colorClass + '">').append(event.id));
-        $('#event_list').append($('<dd class="' + colorClass + '">').append(event.alt));
-        $('#event_list').append($('<dd class="' + colorClass + '">').append(event.variation));
+        $('#event_list').append($('<dd class="' + colorClass + ' alt">').append(event.alt));
+        $('#event_list').append($('<dd class="' + colorClass + ' variation">').append(event.variation));
+
+        var ptz = getPT(eventTimes[index]);
+        $('#event_list').append($('<dd class="' + colorClass + ' pzt">').append(ptz));
       });
 
+    }
+
+    function getPT(utc) {
+      var utcHr = parseInt(utc.substring(0,2));
+      var utcMin = utc.substring(3,6);
+
+      var pacific = utcHr - 7;
+
+      if (pacific < 0)
+        pacific = pacific + 24;
+
+      if (pacific < 10)
+        pacific = "0" + pacific;
+
+      return (pacific + ":" + utcMin);
     }
 
   </script>
