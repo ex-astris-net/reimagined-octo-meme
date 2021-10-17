@@ -70,6 +70,10 @@
     .one { background-color: #4d4948; }
     .two { background-color: #4d3833; }
 
+    .next, .next+dd, .next+dd+dd, .next+dd+dd+dd, .next+dd+dd+dd+dd {
+      background-color: #334d43;
+    }
+
     </style>
 
   </head>
@@ -91,6 +95,8 @@
       var eventTimes = Object.keys(data.standard);
       var eventData = Object.values(data.standard);
 
+      var nextEventIndex = whatsNext(eventTimes);
+
       eventData.forEach((event, index) => {
         //console.log(event);
         var colorClass = 'one';
@@ -99,6 +105,9 @@
           colorClass = 'two';
 
         var dt = $('<dt class="' + colorClass + '">').append(eventTimes[index]);
+        if (index == nextEventIndex)
+          dt.addClass('next');
+
         $('#event_list').append(dt);
 
         $('#event_list').append($('<dd class="' + colorClass + '">').append(event.id));
@@ -109,6 +118,22 @@
         $('#event_list').append($('<dd class="' + colorClass + ' pzt">').append(ptz));
       });
 
+    }
+
+    function whatsNext(eventTimes) {
+      var now = new Date();
+      var nowStr = parseInt(now.getUTCHours() + "" + now.getUTCMinutes());
+
+      var next = Object.keys(eventTimes).find(index => {
+        var event = eventTimes[index];
+        var eventStr = parseInt(event.substring(0,2) + "" + event.substring(3,6));
+        var diff = nowStr - eventStr;
+
+        if (diff < 0)
+          return index;
+      });
+
+      return next;
     }
 
     function getPT(utc) {
