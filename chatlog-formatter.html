@@ -11,7 +11,7 @@
     <style type="text/css">
 
     body {
-      background-color: #123;
+      background-color: #133;
       color: #c0c0c0;
       font-family: Assistant, sans-serif;
     }
@@ -56,7 +56,12 @@
       margin-left: 260px;
     }
 
-    #main h1, #main h2, #main textarea, #main pre { margin: 10px 0 0 25px; }
+    #main h1, #main h2, #main textarea, #main pre { margin: 10px 0 10px 25px; }
+    h2 { font-size: 16px; }
+    h2 span {
+      background-color: #000;
+      font-family: monospace;
+    }
     #main textarea, #main pre {
       padding: 0.5em;
       width: 500px; height: 100px;
@@ -89,17 +94,16 @@
     <input type="radio" name="colorcode" value="none" checked="checked" /><span> No colors</span><br/>
     <input type="radio" name="colorcode" value="channel" /><span> Color by Channel</span><br/>
     <input type="radio" name="colorcode" value="player" checked="checked"/><span> Color by Player</span><br/>
-    <input type="radio" name="colorcode" value="script" /><span> Screenplay Mode</span><br/>
   </fieldset>
 
   <input type="submit" value="Process"/>
 
   <fieldset id="options">
     <legend>Include</legend>
+    <input type="checkbox" value="minformat" checked="checked" /> <span>Remove Emote Colons</span><br/>
     <input type="checkbox" value="channels" checked="checked"/> <span>Channel Names</span><br/>
-    <input type="checkbox" value="timestamps" checked="checked" /> <span>Timestamps</span><br/>
     <input type="checkbox" value="handles" checked="checked" /> <span>Handles</span><br/>
-    <input type="checkbox" value="newlines" checked="checked" /> <span>Line Breaks</span><br/>
+    <input type="checkbox" value="newlines" checked="checked" /> <span>Line Breaks (needs handles)</span><br/>
     <input type="checkbox" value="entities" checked="checked"/> <span>Replace Entities (Discourse)</span><br/>
   </fieldset>
 
@@ -116,6 +120,9 @@
 
 <div id="main">
   <h1>INPUT (/chatlog 1)</h1>
+  <h2>To use this, you must do the command <span>/chatlog 1</span> BEFORE YOU START RPING.<br>
+    This will create a <span>.log</span> file that you can find in your STO game folder in<br>
+    <span>Live/logs/GameClient</span>. (Chat transcipt filenames start with <span>Chat_</span>.)</h2>
   <textarea id="input">(paste transcript here...)</textarea>
   <h1>OUTPUT</h1>
   <textarea id="output"></textarea>
@@ -145,7 +152,7 @@ var LINEBREAK_REGEX = /\n\n/mg;
 
 var HEX_COLORS = ["#84c8f3", "#b2f3b2", "#ffff99", "#239edd", "#6cdd23", "#dd9323", "#ffffff", "#f3b2b1", "#ddd123", "#db4d4d"];
 
-var CHANNELS = {"&lt;emote&gt;": true}
+var CHANNELS = {}
 var PLAYERS = {}
 
 function processLog() {
@@ -208,12 +215,12 @@ function update() {
 
   processed = stripFiltered(processed);
 
+  if ($('#controls input[value="minformat"]').prop('checked'))
+    processed = minimizeFormatting(processed);
   if (!$('#controls input[value="channels"]').prop('checked'))
     processed = stripChannels(processed);
   if (!$('#controls input[value="handles"]').prop('checked'))
     processed = stripHandles(processed);
-  if (!$('#controls input[value="timestamps"]').prop('checked'))
-    processed = stripTimestamps(processed);
   if (!$('#controls input[value="newlines"]').prop('checked'))
     processed = doNameBreaking(processed);
   if ($('#controls input[value="entities"]').prop('checked'))
@@ -225,6 +232,13 @@ function update() {
 
   $('#main #output').text(processed);
   $('#main #preview').html(htmlify(processed));
+}
+
+function minimizeFormatting(raw) {
+  var regex = /(\[Local,,Emote] \w+@[\w\-#.]+): /mg;
+  var replaced = raw.replace(regex, "$1 ");
+
+  return replaced;
 }
 
 function replaceEntities(raw) {
