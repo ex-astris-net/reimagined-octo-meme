@@ -101,10 +101,10 @@
   <fieldset id="options">
     <legend>Include</legend>
     <input type="checkbox" value="minformat" checked="checked" /> <span>Remove Emote Colons</span><br/>
-    <input type="checkbox" value="channels" checked="checked"/> <span>Channel Names</span><br/>
-    <input type="checkbox" value="handles" checked="checked" /> <span>Handles</span><br/>
-    <input type="checkbox" value="newlines" checked="checked" /> <span>Line Breaks (needs handles)</span><br/>
+    <!--<input type="checkbox" value="channels" checked="checked"/> <span>Channel Names</span><br/>  nope, we can't have nice things, I guess. -->
+    <!--<input type="checkbox" value="handles" checked="checked" /> <span>Handles</span><br/>-->
     <input type="checkbox" value="entities" checked="checked"/> <span>Replace Entities (Discourse)</span><br/>
+    <input type="checkbox" value="evenspacing" /> <span>Even Spacing</span><br/>
   </fieldset>
 
   <fieldset id="filter_channels" class="filters">
@@ -142,11 +142,8 @@ $(document).ready(function() {
 });
 
 var HANDLE_REGEX = /\@[\w\-#.]+/mg;
-var CHANNEL_REGEX = /(?<=,)[\w -.]+?,[\w -.]+?(?=])/mg;
+var CHANNEL_REGEX = /\[\d+,\w+,\d,[\w ]*@[\w #]*,@,([\w\d ,]+)?]/mg;
 var CHANNEL_REGEX_2 = /\[(?<=\[)[\w -.]+?,[\w -.]+?(?=])] /mg;
-//var CHANNEL_REGEX = /\[[\w: -]+\]( To )?/mg;
-// commented regex is the original working stuff until
-// sto broke line outputs with 1 character cutoffs.
 var TIMESTAMP_REGEX = /^\[(\d+\/\d+ )?\d+:\d+\] /mg;
 var LINEBREAK_REGEX = /\n\n/mg;
 
@@ -166,7 +163,6 @@ function processLog() {
   // 2. grab channel names
   var channels = CHANNELS;
   $.extend(channels, parseForChannels(raw));
-  //console.log(channels);
 
   var channelMap = addLineCounts(raw, CHANNELS);
   var playerMap = addLineCounts(raw, PLAYERS);
@@ -212,26 +208,30 @@ function update() {
   }
 
   var processed = rawArray.join("\n");
-
   processed = stripFiltered(processed);
 
   if ($('#controls input[value="minformat"]').prop('checked'))
     processed = minimizeFormatting(processed);
-  if (!$('#controls input[value="channels"]').prop('checked'))
-    processed = stripChannels(processed);
-  if (!$('#controls input[value="handles"]').prop('checked'))
-    processed = stripHandles(processed);
-  if (!$('#controls input[value="newlines"]').prop('checked'))
-    processed = doNameBreaking(processed);
+
   if ($('#controls input[value="entities"]').prop('checked'))
     processed = replaceEntities(processed);
 
-  //console.log(processed);
-
   processed = applyEmoteColor(processed, channelColorMap);
+
+  if ($('#controls input[value="evenspacing"]').prop('checked'))
+    processed = evenSpacing(processed);
 
   $('#main #output').text(processed);
   $('#main #preview').html(htmlify(processed));
+}
+
+function evenSpacing(raw) {
+  var regex = /\n{2,}/mg;
+  var replaced = raw.replace(regex, '\n');
+  var respaceRegex = /\n/mg;
+  var replaced2 = replaced.replace(respaceRegex,'\n\n');
+
+  return replaced2;
 }
 
 function minimizeFormatting(raw) {
@@ -255,22 +255,6 @@ function reprintMetadata(raw) {
   return replacedMetadata;
 }
 
-function scriptMode(raw) {
-	// 1. Change the handles to <name> on local lines
-  var regex = /\[Local] ([\w ]+)@[\w.#-]+: (.*)/mg;
-  var post = raw.replace(regex, "[Local] <$1> $2");
-
-  // 2. Go through all emote lines and insert linebreak on quotations.
-  regex = /(.*)\] ([\w ]+)(@[\w.#-]+)([^"\n]*)"([^"]*)"(.*)/mg;
-  post = post.replace(regex, "$1\] $2$3$4\n$1\] [Local] <$2> $5\n$1\] $2$3$6");
-
-  // 3. Get rid of extra emote lines
-  regex = /\n.*[\w ]+@[\w.#-]+\n/mg;
-  post = post.replace(regex, "\n");
-
-	return post;
-}
-
 function parseForPlayers(raw) {
   var regex = HANDLE_REGEX;
   var count = raw.match(regex);
@@ -281,24 +265,19 @@ function parseForPlayers(raw) {
 }
 
 function parseForChannels(raw) {
-  var temp = stripTimestamps(raw);
   var regex = CHANNEL_REGEX;
-  var count = temp.match(regex);
+  var matches = raw.matchAll(regex);
+  var count = [];
+  let m = matches.next();
 
-  if (!count) {
-    return {};
+  while (!m.done) {
+    var channel = m.value[1];
+    count.push(channel);
+    m = matches.next();
   }
 
   var itemSet = getUniques(count);
 
-  // var renamedItems = {};
-  // for (item in itemSet) {
-  //   var splitString = item.split(",");
-  //   var newItemStr = splitString[0] + " " + splitString[2];
-  //   renamedItems[newItemStr] = true;
-  // }
-
-  //return renamedItems;
   return itemSet;
 }
 
@@ -337,9 +316,11 @@ function stripTimestamps(raw) {
 }
 
 function stripHandles(raw) {
+  console.log(raw);
+
   // modified handle regex because of sign ins/outs
-  var regex = /@[\w-#.]+(?!.* has logged)/mg;
-  var post = raw.replace(regex, "");
+  var regex = /@[\w\-\.#]*(?!.* has logged)/mg;
+  var post = raw.replace(regex, " ");
 
   return post;
 }
