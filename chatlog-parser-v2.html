@@ -34,6 +34,9 @@
         fieldset {
             padding: 5px; 
         }
+        
+        #controls span { line-height: 1.5; }
+        #controls span.tooltip { border-bottom: 1px dotted #ccc; }
 
         #channel_filter, #player_filter {
             display: grid;
@@ -82,6 +85,9 @@
         #tfields textarea {
             width: 600px;
             height: 150px;
+
+            background-color: #111;
+            color: #fff;
         }
 
         pre#preview {
@@ -105,9 +111,6 @@
             text-transform: uppercase;
             letter-spacing: 0.15em;
         }
-
-        #controls span { line-height: 1.5; }
-        #controls span.tooltip { border-bottom: 1px dotted #ccc; }
 
         abbr {
             margin-bottom: 0;
@@ -137,7 +140,7 @@
 
             <fieldset id="log_types">
                 <legend>type of log</legend>
-                <input type="radio" name="log_type" value="chatlog1" checked="checked" /> <span>/chatlog 1</span><br/>
+                <input type="radio" name="log_type" value="chatlog1" checked="checked" /> <span class="tooltip" title="To use this, you must do the command '/chatlog 1' BEFORE YOU START RPING. This will create a .log file that you can find in your STO game folder in Live/logs/GameClient. (Chat transcipt filenames start with Chat_.)">/chatlog 1</span><br/>
                 <input type="radio" name="log_type" value="sto_bugged_cp" /> <span>STO Copy/Paste (bugged ver.)</span><br/>
                 <input type="radio" name="log_type" value="sto_working_cp" /> <span>STO Copy/Paste (when it worked)</span><br/>
                 <input type="radio" name="log_type" value="discord_scene" /> <span>Discord scene</span><br/>
