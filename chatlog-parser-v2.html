@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+  <title> </title>
+	<link href="https://fonts.googleapis.com/css?family=Assistant:300" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Play:400" rel="stylesheet">
+  <script src="jquery.min.js"></script>
+
+    <style type="text/css">
+
+        * { margin: 0; padding: 0; }
+
+        body {
+            background-color: #123;
+            font-family: 'Assistant', "Gill Sans MT", sans-serif;
+            color: #c0c0c0;
+        }
+
+        #controls {
+            margin: 0 15px;
+            padding: 15px;
+            min-height: 700px;
+            border-radius: 15px;
+            width: 280px;
+
+            float: left;
+
+            background-color: rgba(0, 0, 0, 0.50);
+        }
+
+        fieldset {
+            padding: 5px; 
+        }
+
+        #channel_filter, #player_filter {
+            display: grid;
+            grid-template-columns: 150px 60px 30px 1fr;
+            column-gap: 5px;
+            font-size: 0.8em;
+        }
+
+        legend {
+            padding: 0 0.5em;
+        }
+
+        #channel_filter legend, #player_filter legend {
+            font-size: 1.25em;
+        }
+
+        #channel_filter dt, #player_filter dt {
+            grid-column-start: 0;
+
+            white-space: nowrap; /* Prevent text wrapping */
+            overflow: hidden; /* Hide overflow */
+            text-overflow: ellipsis; /* Display ellipsis for overflowed text */
+        }
+
+        fieldset, button {
+            margin-bottom: 10px;
+        }
+
+        dd.color_field input {
+            width: 50px;
+            border: 1px solid #000;
+
+            background-color: rgba(0, 0, 0, 0.50);
+            color: #fff;
+            font-size: 0.9em;
+        }
+
+        dd.filter {
+            text-align: right;
+        }
+
+        #tfields {
+            margin-left: 340px;
+        }
+
+        #tfields textarea {
+            width: 600px;
+            height: 150px;
+        }
+
+        pre#preview {
+            margin-bottom: 100px;
+            width: 600px;
+            height: auto;
+
+            white-space: pre-wrap;
+            font-family: 'Assistant', sans-serif;
+        }
+
+        button {
+            padding: 2px 5px;
+        }
+
+        h1 {
+            color: #ccc;
+            margin: 15px 0 10px 0;
+
+            font-size: 0.8em;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+        }
+
+        #controls span { line-height: 1.5; }
+        #controls span.tooltip { border-bottom: 1px dotted #ccc; }
+
+        abbr {
+            margin-bottom: 0;
+            margin-right: 5px;
+            padding: 0 10px;
+            width: auto;
+
+            background-color: rgba(50,50,50,0.5);
+            border-radius: 5px;
+            border: 0;
+
+            font-family: "Play";
+            font-size: 14px;
+            color: #369;
+            text-decoration: none;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+    <div id="shell">
+
+        <div id="controls">
+
+            <fieldset id="log_types">
+                <legend>type of log</legend>
+                <input type="radio" name="log_type" value="chatlog1" checked="checked" /> <span>/chatlog 1</span><br/>
+                <input type="radio" name="log_type" value="sto_bugged_cp" /> <span>STO Copy/Paste (bugged ver.)</span><br/>
+                <input type="radio" name="log_type" value="sto_working_cp" /> <span>STO Copy/Paste (when it worked)</span><br/>
+                <input type="radio" name="log_type" value="discord_scene" /> <span>Discord scene</span><br/>
+            </fieldset>            
+
+            <fieldset id="color_themes">
+                <legend>initial color theme</legend>
+                <input type="radio" name="color_theme" value="no_colors" /> <span>No colors</span><br/>
+                <input type="radio" name="color_theme" value="color_channels" /> <span>Color by Channel</span><br/>
+                <input type="radio" name="color_theme" value="color_players" checked="checked" /> <span>Color by Player</span><br/>
+                <input type="radio" name="color_theme" value="abbr_markup"/><span> Abbr. Speaker Markup</span><br/>
+            </fieldset>
+
+            <button id="first_process" action="first_process">process input</button>
+
+            <fieldset id="formatting_options">
+                <legend>options</legend>
+                <input type="checkbox" name="timestamps" checked="checked" /> <span>Include Timestamps</span><br/>
+                <input type="checkbox" name="channels" checked="checked" /> <span>Include Channel Names</span><br/>
+                <input type="checkbox" name="handles" checked="checked" /> <span>Include Handles</span><br/>
+                <input type="checkbox" name="entities" checked="checked" /> <span class="tooltip" title="For posting to Discourse">Replace Entities</span><br/>
+                <input type="checkbox" name="cn_colormatch" /><span> Match Colors on Character Names</span><br/>
+            </fieldset>
+
+            <fieldset id="linebreak_options">
+                <legend>linebreak options</legend>
+                <input type="radio" name="linebreaking" value="none" checked="checked" /> <span>No extra linebreaks</span><br/>
+                <input type="radio" name="linebreaking" value="every_line" /> <span>Every line</span><br/>
+                <input type="radio" name="linebreaking" value="speaker_blocks"/> <span>Speaker blocks</span><br/>
+            </fieldset>            
+
+            <fieldset id="channel_filter">
+                <legend>channel filter</legend>
+            </fieldset>
+            
+            <fieldset id="player_filter">
+                <legend>player filter</legend>
+            </fieldset>
+
+        </div>
+
+        <div id="tfields">
+
+            <h1>input</h1>
+            <textarea id="input"></textarea>
+
+            <h1>output</h1>
+            <textarea id="output"></textarea>
+
+            <br><br>
+
+            <h1>preview</h1>
+            <pre id="preview"> </pre>
+        
+        </div>
+
+    </div>
+
+    <script type="text/javascript">
+
+        const DEFAULT_COLOR_SYS = "#999";
+        const DEFAULT_COLOR_MSG = "#fff";
+        const DEFAULT_COLOR_CN = "#ccc";
+        const EXTRA_DEFAULT_COLORS = ["#84c8f3", "#b2f3b2", "#ffff99", "#239edd", "#6cdd23", 
+        "#dd9323", "#f3b2b1", "#ddd123", "#db4d4d", "#dd9edd"];
+        
+        let ABBR_MARKUP_MODE = false;
+
+        const raw_log_obj = [];
+        const processed_log_obj = [];
+        let id_counter = 1;
+
+        const channel_list = {};
+        const player_list = {};
+
+        const start_button = document.getElementById('first_process');
+        start_button.addEventListener('click', process_input);
+
+        const options_field = document.getElementById('formatting_options');
+        options_field.addEventListener('change', format_options);
+
+        const linebreaks_field = document.getElementById('linebreak_options');
+        linebreaks_field.addEventListener('change', linebreak_options);
+
+        function format_options() {
+            const checkbox = event.target;
+
+            switch (checkbox.name) {
+                case 'timestamps': 
+                    toggle_timestamps(checkbox.checked);
+                    break;
+                case 'channels':
+                    toggle_channel_names(checkbox.checked);
+                    break;
+                case 'handles':
+                    toggle_handles(checkbox.checked);
+                    break;
+                case 'entities': 
+                    toggle_entities(checkbox.checked);
+                    break;
+                case 'cn_colormatch': 
+                    cn_match_color(checkbox.checked);
+                    break;
+            }
+        }
+
+        function linebreak_options() {
+            const selected = event.target;
+
+            switch (selected.value) {
+                case 'none': 
+                    no_extra_linebreaks();
+                    break;
+                case 'every_line': 
+                    linebreaks_everywhere();
+                    break;
+                case 'speaker_blocks':
+                    speaker_blocks();
+                    break;
+            }
+        }
+
+        function process_input() {
+            const raw = document.getElementById('input').value;
+            initiate_raw_obj_array(raw.trim());
+
+            const unique_channels = new Set();
+            const unique_players = new Set();
+
+            // compile lists of handles and channels to create filters
+            raw_log_obj.forEach(element => {
+                unique_channels.add(element.channel);
+            });
+
+            raw_log_obj.forEach(element => {
+                unique_players.add(element.handle);
+            });
+
+            unique_channels.forEach(item => {
+                channel_list[item] = {'count': 0, 'color': ''};
+            });
+
+            unique_players.forEach(item => {
+                player_list[item] = {'count': 0, 'color': ''};
+            });
+
+            // count lines
+            raw_log_obj.forEach(element => {
+                channel_list[element.channel]['count']++;
+                player_list[element.handle]['count']++;
+            });
+
+            // assign some default colors arbitrarily
+            let color_these = [];
+            const selected_color_theme = document.querySelector('input[name="color_theme"]:checked').value;
+            switch (selected_color_theme) {
+                case 'color_channels': 
+                    color_these = sort_top_ten(channel_list);
+                    EXTRA_DEFAULT_COLORS.forEach((hex_color, index) => {
+                        const color_target = color_these[index];
+                        if (color_target)
+                            channel_list[color_target.key]['color'] = hex_color;
+                    });
+                    break;
+                case 'color_players': 
+                    color_these = sort_top_ten(player_list);
+                    EXTRA_DEFAULT_COLORS.forEach((hex_color, index) => {
+                        const color_target = color_these[index];
+                        if (color_target)
+                            player_list[color_target.key]['color'] = hex_color;
+                    });
+                    break;
+                case 'no_colors':
+                    raw_log_obj.forEach(ln => {
+                        ln.sys_color = "";
+                        ln.cn_color = "";
+                        ln.msg_color = "";
+                    });
+                    break;
+                case 'abbr_markup': 
+                    ABBR_MARKUP_MODE = true;
+
+                    color_these = sort_top_ten(player_list);
+                    EXTRA_DEFAULT_COLORS.forEach((hex_color, index) => {
+                        const color_target = color_these[index];
+                        if (color_target)
+                            player_list[color_target.key]['color'] = hex_color;
+                    });
+
+                    break;
+            }
+
+            populate_channel_list();
+            populate_player_list();
+
+            // copy raw to processed
+            process_raw();
+
+            send_processed_to_output();
+        }
+
+        function initiate_raw_obj_array(raw) {
+            reset_log_array(raw_log_obj)
+            const log_type = document.querySelectorAll('#log_types input[name="log_type"]:checked')[0].value;
+
+            switch (log_type) {
+                case 'chatlog1': 
+                    const chatlog1_array = raw.split("\n");
+                    chatlog1_array.forEach(element => {
+                        line_obj = new Chatlog1Line(id_counter, element);
+                        id_counter++;
+
+                        raw_log_obj.push(line_obj);
+                    });
+                    break; 
+
+                case 'sto_bugged_cp': 
+                    const stocpbug_array = raw.split("\n\n");
+                    stocpbug_array.forEach(element => {
+                        line_obj = new StoCpLine(id_counter, element, true);
+                        id_counter++;
+
+                        raw_log_obj.push(line_obj);
+                    });
+                    break;
+
+                case 'sto_working_cp': 
+                    const stocp_array = raw.split("\n\n");
+                    stocp_array.forEach(element => {
+                        line_obj = new StoCpLine(id_counter, element, false);
+                        id_counter++;
+
+                        raw_log_obj.push(line_obj);
+                    });
+                    break;                    
+
+                case 'discord_scene': 
+                    const discourse_array = raw.split(/\n\n(?=\[)/);
+                    discourse_array.forEach(element => {
+                        line_obj = new DiscourseLine(id_counter, element);
+                        id_counter++;
+
+                        raw_log_obj.push(line_obj);
+                    });
+                    break;
+            }
+
+        }
+
+        function process_raw() {
+            /* might be a dumb name if we never do anything but copy over to processed */
+            reset_log_array(processed_log_obj);
+
+            raw_log_obj.forEach(element => {
+                /* hey look, we figured out something to do here! */
+
+                // update color according to the filters, if necessary
+                const color_this = find_filter_color(element.channel, element.handle);
+                if (color_this) 
+                    element.msg_color = color_this;
+
+                const processed_obj = element.copy();
+                
+                // replace entities is on by default
+                processed_obj.message = replace_entities(processed_obj.message);
+
+                processed_log_obj.push(processed_obj);
+            });
+        }
+
+        function toggle_timestamps(checked) {
+            if (checked) {
+                raw_log_obj.forEach((element, index) => {
+                    processed_log_obj[index].timestamp = raw_log_obj[index].timestamp;
+                });
+            }
+            else {
+                processed_log_obj.forEach(element => {
+                    element.timestamp = "";
+                });
+            }
+
+            send_processed_to_output();
+        }
+
+        function toggle_channel_names(checked) {
+            if (checked) {
+                raw_log_obj.forEach((element, index) => {
+                    processed_log_obj[index].channel = raw_log_obj[index].channel;
+                });
+            }
+            else {
+                processed_log_obj.forEach(element => {
+                    element.channel = "";
+                });
+            }
+
+            send_processed_to_output();
+        }
+
+        function toggle_handles(checked) {
+            if (checked) {
+                raw_log_obj.forEach((element, index) => {
+                    processed_log_obj[index].handle = raw_log_obj[index].handle;
+                });
+            }
+            else {
+                processed_log_obj.forEach(element => {
+                    element.handle = "";
+                });
+            }
+
+            send_processed_to_output();
+        }
+
+        function toggle_entities(checked) {
+            if (checked) {
+                raw_log_obj.forEach((element, index) => {
+                    processed_log_obj[index].message = replace_entities(element.message);
+                });
+            }
+            else {
+                raw_log_obj.forEach((element, index) => {
+                    processed_log_obj[index].message = element.message;
+                });
+            }
+
+            send_processed_to_output();            
+        }
+
+        function filter_owner() {
+            const owner_type = get_owner(event.target.name);
+            const checked = event.target.checked;
+            let list_container;
+
+            if (owner_type == 'channel') 
+                list_container = channel_list;
+            else 
+                list_container = player_list;
+
+            const element_name = get_index_equivalent(event.target.name, list_container);
+
+            raw_log_obj.forEach((element, index) => {
+                let which;
+                if (owner_type == 'channel')
+                    which = element.channel;
+                else
+                    which = element.handle;
+
+                if (which == element_name) {
+                    if (checked)
+                        processed_log_obj[index].print = true;
+                    else 
+                        processed_log_obj[index].print = false;
+                }
+            });
+
+            send_processed_to_output();
+        }
+
+        function cn_match_color() {
+            const checked = event.target.checked;
+
+            if (checked) {
+                processed_log_obj.forEach(element => {
+                    element.cn_color = element.msg_color;
+                });
+            }
+            else {
+                processed_log_obj.forEach(element => {
+                    element.cn_color = DEFAULT_COLOR_CN;
+                });
+            }
+
+            send_processed_to_output();
+        }
+
+        function apply_color() {
+            const owner_type = get_owner(event.target.name);
+            let list_container;
+
+            if (owner_type == 'channel')
+                list_container = channel_list;
+            else 
+                list_container = player_list;
+
+            const element_name = get_index_equivalent(event.target.name, list_container);
+
+            processed_log_obj.forEach(element => {
+                let which;
+                if (owner_type == 'channel')
+                    which = element.channel;
+                else
+                    which = element.handle;
+
+                if (which == element_name) {
+                    element.msg_color = event.target.value;
+                }
+            });
+
+            // also change the text field itself
+            event.target.style.color = event.target.value;
+
+            send_processed_to_output();
+        }
+
+        function no_extra_linebreaks() {
+            processed_log_obj.forEach(line_obj => {
+                line_obj.linebreak = false;
+            });
+
+            send_processed_to_output();
+        }
+
+        function linebreaks_everywhere() {
+            processed_log_obj.forEach(line_obj => {
+                line_obj.linebreak = true;
+            });
+
+            send_processed_to_output();
+        }
+
+        function speaker_blocks() {
+            processed_log_obj.forEach((line_obj, index) => {
+                if (line_obj.print) {
+                    next_line = processed_log_obj[index + 1];
+
+                    if (next_line) {
+                        if (line_obj.charname != next_line.charname)
+                            line_obj.linebreak = true;
+                        else 
+                            line_obj.linebreak = false;
+                    }
+                    
+                }
+            });
+
+            send_processed_to_output();
+        }
+
+        function populate_channel_list() {
+            const list_container = document.getElementById("channel_filter");
+            list_container.innerHTML = '';
+
+            const channel_keys = Object.keys(channel_list);
+
+            channel_keys.forEach((element, index) => {
+                generate_filter_html(list_container, element, 'channel_' + index, 
+                channel_list[element]['count'], channel_list[element]['color']);
+            });
+        }
+
+        function populate_player_list() {
+            const list_container = document.getElementById("player_filter");
+            list_container.innerHTML = '';
+
+            const player_keys = Object.keys(player_list);
+
+            player_keys.forEach((element, index) => {
+                generate_filter_html(list_container, element, 'player_' + index, 
+                player_list[element]['count'], player_list[element]['color']);
+            });
+        }
+
+        function send_processed_to_preview() {
+            let output = "";
+
+            processed_log_obj.forEach(element => {
+                if (element.print) {
+
+                    if (ABBR_MARKUP_MODE) {
+                        // no handles or channel names
+                        // timestamps integrated into the abbr title
+                        output += "<abbr title='" + element.timestamp + "'>";
+                        output += element.charname;
+                        output += "</abbr>";
+                    }
+                    else {
+                        // timestamp
+                        if (element.timestamp.length > 0) {
+                            if (element.sys_color)
+                                output += wrap_color_markup('html', element.sys_color, element.timestamp + " ");
+                            else
+                                output += element.timestamp + " ";
+                        }
+
+                        // channel name
+                        if (element.channel.length > 0) {
+                            if (element.sys_color)
+                                output += wrap_color_markup('html', element.sys_color, "[" + element.channel + "] ");
+                            else 
+                                output += "[" + element.channel + "] ";
+                        }
+
+                        // char + handle
+                        if (element.cn_color)
+                            output += wrap_color_markup('html', element.cn_color, element.charname + element.handle);
+                        else
+                            output += element.charname + element.handle;
+
+                        // speaker colon
+                        if (element.sys_color)
+                            output += wrap_color_markup('html', element.sys_color, ": ");
+                        else
+                            output += ": ";
+                    }
+                    
+                    // message
+                    if (element.msg_color)
+                        output += wrap_color_markup('html', element.msg_color, element.message);
+                    else
+                        output += element.message;
+
+                    // post-message
+                    output += "\n";
+
+                    if (element.linebreak)
+                        output += "\n";                    
+                }
+            });
+
+            document.getElementById('preview').innerHTML = output;
+        }
+
+        function send_processed_to_output() {
+            send_processed_to_preview();
+
+            let output = "";
+
+            processed_log_obj.forEach(element => {
+                if (element.print) {
+
+                    if (ABBR_MARKUP_MODE) {
+                        // no handles or channel names
+                        // timestamps integrated into the abbr title
+                        output += "<abbr title='" + element.timestamp + "'>";
+                        output += element.charname;
+                        output += "</abbr>";
+                    }
+                    else {
+
+                        // timestamp
+                        if (element.timestamp.length > 0) {
+                            if (element.sys_color)
+                                output += wrap_color_markup('bbcode', element.sys_color, element.timestamp + " ");
+                            else
+                                output += element.timestamp + " ";
+                        }
+
+                        // channel name
+                        if (element.channel.length > 0) {
+                            if (element.sys_color)
+                                output += wrap_color_markup('bbcode', element.sys_color, "[" + element.channel + "] ");
+                            else 
+                                output += "[" + element.channel + "] ";
+                        }
+
+                        // char + handle
+                        if (element.cn_color)
+                            output += wrap_color_markup('bbcode', element.cn_color, element.charname + element.handle);
+                        else
+                            output += element.charname + element.handle;
+
+                        // speaker colon
+                        if (element.sys_color)
+                            output += wrap_color_markup('bbcode', element.sys_color, ": ");
+                        else
+                            output += ": ";
+                    }
+
+                    // message
+                    if (element.msg_color)
+                        output += wrap_color_markup('bbcode', element.msg_color, element.message);
+                    else
+                        output += element.message;
+
+                    // post-message
+                    output += "\n";
+
+                    if (element.linebreak)
+                        output += "\n";
+                }
+            });
+
+            document.getElementById('output').value = output;
+        }
+
+
+        /* **** HELPER/UTILITY FUNCTIONS **** */
+
+        function find_filter_color(needle1, needle2) {
+            // search the filters for this and return color and type, I guess
+            const check_channels = channel_list[needle1]['color'];
+            const check_players = player_list[needle2]['color'];
+
+            if (check_channels)
+                return check_channels
+            else if (check_players)
+                return check_players;
+
+            return "";
+        }
+
+        function generate_filter_html(list_container, element, element_name, element_count, element_color) {
+            const dt = document.createElement('dt');
+            dt.append(element);
+
+            const dd = document.createElement('dd');
+            const hex_input = document.createElement('input');
+            hex_input.setAttribute('name', element_name);
+            hex_input.addEventListener('change', apply_color);
+
+            if (element_color) {
+                hex_input.value = element_color;
+                hex_input.style.color = element_color;
+            }
+
+            dd.classList.add('color_field');
+            dd.append(hex_input);
+
+            const dd2 = document.createElement('dd');
+            dd2.classList.add('linecount');
+            dd2.append(element_count);
+
+            const dd3 = document.createElement('dd');
+            dd3.classList.add('filter')
+            const cb = document.createElement('input');
+            cb.type = 'checkbox';
+            cb.setAttribute('name', element_name);
+            cb.setAttribute('checked', 'checked');
+            cb.addEventListener('click', filter_owner);
+            dd3.append(cb);
+
+            list_container.append(dt);
+            list_container.append(dd);
+            list_container.append(dd2);
+            list_container.append(dd3);
+        }
+
+        function get_owner(name_string) {
+            return name_string.substring(0, name_string.indexOf("_"));
+        }
+
+        function get_index_equivalent(name_string, list_container) {
+            const index = name_string.substring(name_string.indexOf("_") + 1, name_string.length);
+            
+            const list_keys = Object.keys(list_container);
+            return list_keys[index];
+        }
+
+        function replace_entities(msg) {
+            let replaced = msg.replace("<", "&lt;");
+            replaced = replaced.replace(">", "&gt;");
+
+            return replaced;
+        }
+
+        function reset_log_array(la) {
+            la.length = 0;  //  O.o 
+        }
+
+        function sort_top_ten(list_obj) {
+            const list_array = Object.keys(list_obj).map(key => ({key, count: list_obj[key]['count']}));
+            list_array.sort((a,b) => b.count - a.count);
+            return list_array;
+        }
+
+        function wrap_color_markup(markup, color, content) {
+            let output = "";
+
+            switch (markup) { 
+                case 'bbcode':
+                    output += "[color=" + color + "]" + content + "[/color]";
+                    break;
+                case 'html':
+                    output += "<span style='color:" + color + "'>" + content + "</span>";
+                    break; 
+            }
+
+            return output;
+        }
+
+
+        /* types of log lines */ 
+
+        class Chatlog1Line {
+            /* log type: /chatlog 1 */ 
+
+            constructor(id_counter, line) {
+                this.id = id_counter;
+                this.print = true;
+                this.linebreak = false;
+                this.sys_color = DEFAULT_COLOR_SYS;
+                this.cn_color = DEFAULT_COLOR_CN;
+                this.msg_color = DEFAULT_COLOR_MSG;
+
+                this.meta_array = this.extract_meta(line);
+
+                this.timestamp = this.readable_ts(this.extract_timestamp(this.meta_array));
+                this.channel = this.extract_channel(this.meta_array);
+
+                const speaker = this.extract_speaker(this.meta_array);
+                this.charname = this.extract_charname(speaker);
+                this.handle = this.extract_handle(speaker);
+
+                this.message = this.extract_msg(line);
+            }
+
+            copy() {
+                const clone = {
+                    'id': this.id,
+                    'print': this.print,
+                    'linebreak': this.linebreak, 
+                    'sys_color': this.sys_color,
+                    'cn_color': this.cn_color, 
+                    'msg_color': this.msg_color, 
+                    'meta_array': this.meta_array, 
+                    'timestamp': this.timestamp,
+                    'channel': this.channel, 
+                    'charname': this.charname, 
+                    'handle': this.handle, 
+                    'message': this.message
+                }
+
+                return clone;
+            }
+
+            extract_meta(content) {
+                const meta = content.substring(1, content.indexOf("]"));
+                return meta.split(",");
+            }
+
+            extract_timestamp(meta_array) {
+                /* fragment between comma 1 and 2 */
+                const timestamp = meta_array[1];
+                return timestamp;
+            }
+
+            extract_channel(meta_array) {
+                /* fragment after comma 7 is type*/
+                /* (System, Emote, Local, Channel, Private, Private_Sent) */
+                const channel_type = meta_array[7];
+
+                /* fragment after comma 5 is channel name */
+                const channel_name = meta_array[5];
+
+                if (channel_type === "Channel")
+                    return "#" + channel_name; 
+
+                return channel_type;
+            }
+
+            extract_speaker(meta_array) {
+                /* fragment between comma 3 and 4 */
+                const speaker = meta_array[3];
+                return speaker;
+            }
+
+            extract_dmtarget(meta_array) {
+                const target = meta_array[4];
+                return target;
+            }
+
+            extract_charname(content) {
+                const charname = content.substring(0, content.indexOf("@"));
+                return charname;
+            }
+
+            extract_handle(content) {
+                const handle = content.substring(content.indexOf("@"), content.length);
+                return handle;
+            }
+
+            extract_msg(content) {
+                const msg = content.substring(content.indexOf("]") + 1, content.length).trim();
+                return msg;
+            }
+
+            readable_ts(ts) {
+                // 20240302T161549
+                const year = ts.substring(0,4);
+                const month = ts.substring(4,6);
+                const day = ts.substring(6,8);
+                const hour = ts.substring(9,11);
+                const min = ts.substring(11,13);
+                const sec = ts.substring(13,15);
+
+                return hour + ":" + min + ":" + sec;
+                // return year + "-" + month + "-" + day + " " + hour + ":" + min + ":" + sec;
+            }            
+        }
+
+        class StoCpLine {
+            /* log type: copy/pasted from STO, broken version. */ 
+
+            STO_BUGGED_REGEXP = /\[(?:\d{1,2}\/\d{1,2})?(?: )?(\d{1,2}:\d{1,2})?](?:\[([\w: -]+)?\])?(?:(.+)?@([\w\-#.]+))?(?::)?(.+)/;
+            STO_GOOD_REGEXP = /\[(?:\d{1,2}\/\d{1,2})?(?: )?(\d{1,2}:\d{1,2})?](?: )(?:\[([\w: -]+)?\] )?(?:(.+)?@([\w\-#.]+))?(?::)? (.+)/;
+
+            constructor(id_counter, line, bugged) {
+                this.id = id_counter;
+                this.print = true;
+                this.linebreak = false;
+                this.sys_color = DEFAULT_COLOR_SYS;
+                this.cn_color = DEFAULT_COLOR_CN;
+                this.msg_color = DEFAULT_COLOR_MSG;
+
+                let matches = line.match(this.STO_BUGGED_REGEXP);
+                if (!bugged)
+                    matches = line.match(this.STO_GOOD_REGEXP);
+                
+                this.timestamp = matches[1];
+                this.channel = matches[2] ?? 'Em';
+                this.charname = matches[3] ?? '';
+                this.handle = "@" + matches[4];
+                this.message = matches[5];
+            }
+
+            copy() {
+                const clone = {
+                    'id': this.id,
+                    'print': this.print,
+                    'linebreak': this.linebreak, 
+                    'sys_color': this.sys_color,
+                    'cn_color': this.cn_color, 
+                    'msg_color': this.msg_color, 
+                    'timestamp': this.timestamp,
+                    'channel': this.channel,
+                    'charname': this.charname, 
+                    'handle': this.handle, 
+                    'message': this.message
+                }
+
+                return clone;
+            }
+
+        }
+
+        class DiscourseLine {
+            /* log type: discourse scene log */ 
+
+            constructor(id_counter, line) {
+                this.id = id_counter;
+                this.print = true;
+                this.linebreak = false;
+                this.sys_color = DEFAULT_COLOR_SYS;
+                this.cn_color = DEFAULT_COLOR_CN;
+                this.msg_color = DEFAULT_COLOR_MSG;
+
+                this.timestamp = this.extract_timestamp(line);
+                this.channel = 'discord';
+                this.charname = this.extract_charname(line);
+                this.handle = '@' + this.charname;
+                this.message = this.extract_msg(line);                
+            }
+
+            copy() {
+                const clone = {
+                    'id': this.id,
+                    'print': this.print,
+                    'linebreak': this.linebreak, 
+                    'sys_color': this.sys_color,
+                    'cn_color': this.cn_color, 
+                    'msg_color': this.msg_color, 
+                    'timestamp': this.timestamp,
+                    'channel': 'discord',
+                    'charname': this.charname, 
+                    'handle': this.handle, 
+                    'message': this.message
+                }
+
+                return clone;
+            }
+
+            extract_timestamp(line) {
+                const full_ts = line.substring(1, line.indexOf(']'));
+                return full_ts.substring(full_ts.indexOf('T') + 1, full_ts.indexOf('.'));
+            }
+
+            extract_charname(line) {
+                const post_ts = line.substring(line.indexOf('] [') + 3, line.length);
+                const cn = post_ts.substring(0, post_ts.indexOf(']'));
+                return cn;
+            }
+
+            extract_msg(line) {
+                const post_cn = line.substring(line.indexOf(this.charname) + this.charname.length + 2);
+                return post_cn;
+            }
+        }
+
+
+    </script>
+
+</body>
+
+</html>
