@@ -378,9 +378,9 @@
                     break;                    
 
                 case 'discord_scene': 
-                    const discourse_array = raw.split(/\n\n(?=\[)/);
-                    discourse_array.forEach(element => {
-                        line_obj = new DiscourseLine(id_counter, element);
+                    const discord_array = raw.split(/\n\n(?=\[)/);
+                    discord_array.forEach(element => {
+                        line_obj = new DiscordLine(id_counter, element);
                         id_counter++;
 
                         raw_log_obj.push(line_obj);
@@ -952,7 +952,7 @@
                     matches = line.match(this.STO_GOOD_REGEXP);
                 
                 this.timestamp = matches[1];
-                this.channel = matches[2] ?? 'Em';
+                this.channel = matches[2] ?? 'Local';
                 this.charname = matches[3] ?? '';
                 this.handle = "@" + matches[4];
                 this.message = matches[5];
@@ -978,8 +978,8 @@
 
         }
 
-        class DiscourseLine {
-            /* log type: discourse scene log */ 
+        class DiscordLine {
+            /* log type: discord scene log */ 
 
             constructor(id_counter, line) {
                 this.id = id_counter;
