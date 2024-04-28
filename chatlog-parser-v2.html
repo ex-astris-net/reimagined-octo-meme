@@ -605,7 +605,7 @@
             });
         }
 
-        function send_processed_to_preview() {
+        function send_processed_to_output() {
             let output = "";
 
             processed_log_obj.forEach(element => {
@@ -663,70 +663,72 @@
             });
 
             document.getElementById('preview').innerHTML = output;
-        }
-
-        function send_processed_to_output() {
-            send_processed_to_preview();
-
-            let output = "";
-
-            processed_log_obj.forEach(element => {
-                if (element.print) {
-
-                    if (ABBR_MARKUP_MODE) {
-                        // no handles or channel names
-                        // timestamps integrated into the abbr title
-                        output += "<abbr title='" + element.timestamp + "'>";
-                        output += element.charname;
-                        output += "</abbr>";
-                    }
-                    else {
-
-                        // timestamp
-                        if (element.timestamp.length > 0) {
-                            if (element.sys_color)
-                                output += wrap_color_markup('bbcode', element.sys_color, element.timestamp + " ");
-                            else
-                                output += element.timestamp + " ";
-                        }
-
-                        // channel name
-                        if (element.channel.length > 0) {
-                            if (element.sys_color)
-                                output += wrap_color_markup('bbcode', element.sys_color, "[" + element.channel + "] ");
-                            else 
-                                output += "[" + element.channel + "] ";
-                        }
-
-                        // char + handle
-                        if (element.cn_color)
-                            output += wrap_color_markup('bbcode', element.cn_color, element.charname + element.handle);
-                        else
-                            output += element.charname + element.handle;
-
-                        // speaker colon
-                        if (element.sys_color)
-                            output += wrap_color_markup('bbcode', element.sys_color, ": ");
-                        else
-                            output += ": ";
-                    }
-
-                    // message
-                    if (element.msg_color)
-                        output += wrap_color_markup('bbcode', element.msg_color, element.message);
-                    else
-                        output += element.message;
-
-                    // post-message
-                    output += "\n";
-
-                    if (element.linebreak)
-                        output += "\n";
-                }
-            });
-
             document.getElementById('output').value = output;
         }
+
+        // function send_processed_to_output() {
+            /* qqqqq. it's better this way. */
+        //     send_processed_to_preview();
+
+        //     let output = "";
+
+        //     processed_log_obj.forEach(element => {
+        //         if (element.print) {
+
+        //             if (ABBR_MARKUP_MODE) {
+        //                 // no handles or channel names
+        //                 // timestamps integrated into the abbr title
+        //                 output += "<abbr title='" + element.timestamp + "'>";
+        //                 output += element.charname;
+        //                 output += "</abbr>";
+        //             }
+        //             else {
+
+        //                 // timestamp
+        //                 if (element.timestamp.length > 0) {
+        //                     if (element.sys_color)
+        //                         output += wrap_color_markup('bbcode', element.sys_color, element.timestamp + " ");
+        //                     else
+        //                         output += element.timestamp + " ";
+        //                 }
+
+        //                 // channel name
+        //                 if (element.channel.length > 0) {
+        //                     if (element.sys_color)
+        //                         output += wrap_color_markup('bbcode', element.sys_color, "[" + element.channel + "] ");
+        //                     else 
+        //                         output += "[" + element.channel + "] ";
+        //                 }
+
+        //                 // char + handle
+        //                 if (element.cn_color)
+        //                     output += wrap_color_markup('bbcode', element.cn_color, element.charname + element.handle);
+        //                 else
+        //                     output += element.charname + element.handle;
+
+        //                 // speaker colon
+        //                 if (element.sys_color)
+        //                     output += wrap_color_markup('bbcode', element.sys_color, ": ");
+        //                 else
+        //                     output += ": ";
+        //             }
+
+        //             // message
+        //             if (element.msg_color)
+        //                 output += wrap_color_markup('bbcode', element.msg_color, element.message);
+        //             else
+        //                 output += element.message;
+
+        //             // post-message
+        //             output += "\n";
+
+        //             if (element.linebreak)
+        //                 output += "\n";
+        //         }
+        //     });
+
+        //     document.getElementById('output').value = output;
+        // }
 
 
         /* **** HELPER/UTILITY FUNCTIONS **** */
