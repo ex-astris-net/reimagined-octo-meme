@@ -796,6 +796,7 @@
         function replace_entities(msg) {
             let replaced = msg.replace("<", "&lt;");
             replaced = replaced.replace(">", "&gt;");
+            replaced = replaced.replace("_", "&lowbar;");
 
             return replaced;
         }
