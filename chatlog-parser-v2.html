@@ -140,10 +140,16 @@
             <fieldset id="log_types">
                 <legend>type of log</legend>
                 <input type="radio" name="log_type" value="chatlog1" checked="checked" /> <span class="tooltip" title="To use this, you must do the command '/chatlog 1' BEFORE YOU START RPING. This will create a .log file that you can find in your STO game folder in Live/logs/GameClient. (Chat transcipt filenames start with Chat_.)">/chatlog 1</span><br/>
-                <input type="radio" name="log_type" value="sto_bugged_cp" /> <span>STO Copy/Paste (bugged ver.)</span><br/>
-                <input type="radio" name="log_type" value="sto_working_cp" /> <span>STO Copy/Paste (when it worked)</span><br/>
+                <input type="radio" name="log_type" value="sto_bugged_cp" /> <span>STO copy/paste</span><br/>                                
+                <input type="radio" name="log_type" value="sto_bugged_cp_nots" /> <span>STO copy/paste No Timestamps</span><br/>                
                 <input type="radio" name="log_type" value="discord_scene" /> <span>Discord scene</span><br/>
-            </fieldset>            
+
+                <details>
+                    <summary>STO C/P when they worked</summary>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="radio" name="log_type" value="sto_working_cp" /> <span>STO Copy/Paste</span><br/>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="radio" name="log_type" value="sto_working_cp_nots" /> <span>STO Copy/Paste No TS</span><br/>                    
+                </details>
+            </fieldset>
 
             <fieldset id="color_themes">
                 <legend>initial color theme</legend>
@@ -374,8 +380,28 @@
 
                         raw_log_obj.push(line_obj);
                     });
-                    break;                    
+                    break;
 
+                case 'sto_bugged_cp_nots': 
+                    const stocpnotsbug_array = raw.split("\n\n");
+                    stocpnotbug_array.forEach(element => {
+                        line_obj = new StoCpLineNoTs(id_counter, element, true);
+                        id_counter++;
+
+                        raw_log_obj.push(line_obj);
+                    });
+                    break;
+
+                case 'sto_working_cp_nots': 
+                    const stocpnots_array = raw.split("\n\n");
+                    stocpnots_array.forEach(element => {
+                        line_obj = new StoCpLineNoTs(id_counter, element, false);
+                        id_counter++;
+
+                        raw_log_obj.push(line_obj);
+                    });
+                    break;                    
+                    
                 case 'discord_scene': 
                     const discord_array = raw.split(/\n\n(?=\[)/);
                     discord_array.forEach(element => {
@@ -665,71 +691,6 @@
             document.getElementById('output').value = output;
         }
 
-        // function send_processed_to_output() {
-            /* qqqqq. it's better this way. */
-        //     send_processed_to_preview();
-
-        //     let output = "";
-
-        //     processed_log_obj.forEach(element => {
-        //         if (element.print) {
-
-        //             if (ABBR_MARKUP_MODE) {
-        //                 // no handles or channel names
-        //                 // timestamps integrated into the abbr title
-        //                 output += "<abbr title='" + element.timestamp + "'>";
-        //                 output += element.charname;
-        //                 output += "</abbr>";
-        //             }
-        //             else {
-
-        //                 // timestamp
-        //                 if (element.timestamp.length > 0) {
-        //                     if (element.sys_color)
-        //                         output += wrap_color_markup('bbcode', element.sys_color, element.timestamp + " ");
-        //                     else
-        //                         output += element.timestamp + " ";
-        //                 }
-
-        //                 // channel name
-        //                 if (element.channel.length > 0) {
-        //                     if (element.sys_color)
-        //                         output += wrap_color_markup('bbcode', element.sys_color, "[" + element.channel + "] ");
-        //                     else 
-        //                         output += "[" + element.channel + "] ";
-        //                 }
-
-        //                 // char + handle
-        //                 if (element.cn_color)
-        //                     output += wrap_color_markup('bbcode', element.cn_color, element.charname + element.handle);
-        //                 else
-        //                     output += element.charname + element.handle;
-
-        //                 // speaker colon
-        //                 if (element.sys_color)
-        //                     output += wrap_color_markup('bbcode', element.sys_color, ": ");
-        //                 else
-        //                     output += ": ";
-        //             }
-
-        //             // message
-        //             if (element.msg_color)
-        //                 output += wrap_color_markup('bbcode', element.msg_color, element.message);
-        //             else
-        //                 output += element.message;
-
-        //             // post-message
-        //             output += "\n";
-
-        //             if (element.linebreak)
-        //                 output += "\n";
-        //         }
-        //     });
-
-        //     document.getElementById('output').value = output;
-        // }
-
-
         /* **** HELPER/UTILITY FUNCTIONS **** */
 
         function find_filter_color(needle1, needle2) {
@@ -935,13 +896,64 @@
             }            
         }
 
+        class StoCpLineNoTs {
+            /* log type: copy/pasted from STO, no timestamps because this person is a heathen */ 
+
+            STO_NOTS_BUGGED_REGEXP = /(\[([\w: -]+)?])?(\w+)@([\w\-#.]+)(:)?(.+)/;
+            STO_NOTS_GOOD_REGEXP = /(\[([\w: -]+)?] )?(\w+)@([\w\-#.]+)(:)?(.+)/;
+
+            constructor(id_counter, line, bugged) {
+                console.log(line, bugged);
+
+                this.id = id_counter;
+                this.print = true;
+                this.linebreak = false;
+                this.sys_color = DEFAULT_COLOR_SYS;
+                this.cn_color = DEFAULT_COLOR_CN;
+                this.msg_color = DEFAULT_COLOR_MSG;
+
+                let matches = line.match(this.STO_NOTS_BUGGED_REGEXP);
+                if (!bugged)
+                    matches = line.match(this.STO_NOTS_GOOD_REGEXP);
+                
+                console.log("matches = ", matches);
+
+                this.timestamp = "";
+                this.channel = matches[2] ?? 'Local';
+                this.charname = matches[3] ?? '';
+                this.handle = "@" + matches[4];
+                this.message = matches[6];
+            }
+
+            copy() {
+                const clone = {
+                    'id': this.id,
+                    'print': this.print,
+                    'linebreak': this.linebreak, 
+                    'sys_color': this.sys_color,
+                    'cn_color': this.cn_color, 
+                    'msg_color': this.msg_color, 
+                    'timestamp': this.timestamp,
+                    'channel': this.channel,
+                    'charname': this.charname, 
+                    'handle': this.handle, 
+                    'message': this.message
+                }
+
+                return clone;
+            }
+
+        }
+
         class StoCpLine {
-            /* log type: copy/pasted from STO, broken version. */ 
+            /* log type: copy/pasted from STO */ 
 
             STO_BUGGED_REGEXP = /\[(?:\d{1,2}\/\d{1,2})?(?: )?(\d{1,2}:\d{1,2})?](?:\[([\w: -]+)?\])?(?:(.+)?@([\w\-#.]+))?(?::)?(.+)/;
             STO_GOOD_REGEXP = /\[(?:\d{1,2}\/\d{1,2})?(?: )?(\d{1,2}:\d{1,2})?](?: )(?:\[([\w: -]+)?\] )?(?:(.+)?@([\w\-#.]+))?(?::)? (.+)/;
 
             constructor(id_counter, line, bugged) {
+                console.log(line, bugged);
+
                 this.id = id_counter;
                 this.print = true;
                 this.linebreak = false;
@@ -953,6 +965,8 @@
                 if (!bugged)
                     matches = line.match(this.STO_GOOD_REGEXP);
                 
+                console.log(matches);
+
                 this.timestamp = matches[1];
                 this.channel = matches[2] ?? 'Local';
                 this.charname = matches[3] ?? '';
