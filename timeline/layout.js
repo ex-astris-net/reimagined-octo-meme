@@ -3,6 +3,7 @@ import { margin, outerWidth, outerHeight } from './config.js';
 export function createLayout(container) {
   const width = outerWidth - margin.left - margin.right;
   const height = outerHeight - margin.top - margin.bottom;
+  console.log("LAYOUT =", width, height);
 
   const svg = d3.select(container)
     .append('svg')

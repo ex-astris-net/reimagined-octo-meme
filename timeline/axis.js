@@ -11,6 +11,8 @@ export function createAxes(g, x, height) {
     let majorAxis, minorAxis;
 
     if (k < 5) {
+      console.log("k =", k);
+
       majorAxis = d3.axisBottom(newX)
         .ticks(d3.timeYear.every(1))
         .tickSize(-height)
@@ -20,7 +22,10 @@ export function createAxes(g, x, height) {
         .ticks(d3.timeMonth.every(3))
         .tickSize(6)
         .tickFormat('');
-    } else if (k < 20) {
+    } 
+    else if (k >= 5) {
+      console.log("k =", k);
+
       majorAxis = d3.axisBottom(newX)
         .ticks(d3.timeYear.every(1))
         .tickFormat(d3.timeFormat('%Y'));
@@ -28,18 +33,13 @@ export function createAxes(g, x, height) {
       minorAxis = d3.axisBottom(newX)
         .ticks(d3.timeMonth.every(1))
         .tickFormat(d3.timeFormat('%b'));
-    } else {
-      majorAxis = d3.axisBottom(newX)
-        .ticks(d3.timeMonth.every(1))
-        .tickFormat(d3.timeFormat('%b'));
-
-      minorAxis = d3.axisBottom(newX)
-        .ticks(d3.timeWeek.every(1))
-        .tickFormat('');
-    }
+    } 
 
     major.call(majorAxis);
     minor.call(minorAxis);
+    minor.selectAll('text')
+      .attr('dy', '2.5em');
+
   }
 
   return { update };

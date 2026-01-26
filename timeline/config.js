@@ -1,5 +1,7 @@
 export const URL = 'https://argo.ex-astris.net/tljson';
 
+export const SNAP_PX = 10; // feels good on most screens
+
 export const LANES = [
   'Open Frequency',
   'Mission Briefs (Events)',
