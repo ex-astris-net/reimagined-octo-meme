@@ -11,8 +11,6 @@ export function createAxes(g, x, height) {
     let majorAxis, minorAxis;
 
     if (k < 5) {
-      console.log("k =", k);
-
       majorAxis = d3.axisBottom(newX)
         .ticks(d3.timeYear.every(1))
         .tickSize(-height)
@@ -24,8 +22,6 @@ export function createAxes(g, x, height) {
         .tickFormat('');
     } 
     else if (k >= 5) {
-      console.log("k =", k);
-
       majorAxis = d3.axisBottom(newX)
         .ticks(d3.timeYear.every(1))
         .tickFormat(d3.timeFormat('%Y'));
