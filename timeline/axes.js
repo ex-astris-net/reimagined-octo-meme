@@ -79,12 +79,16 @@ export function renderAxes({ zx, axes }) {
     d3.axisBottom(zx)
       .ticks(config.top.interval)
       .tickFormat(showPrimaryLabels ? config.top.format : "")
-      .tickSize(6)
+      .tickSize(-innerHeight)
       .tickSizeOuter(10)
   );
 
+  axes.major.selectAll(".tick line")
+    .attr("stroke", "#000")
+    .attr("stroke-opacity", 0.15);
+
   axes.major.selectAll("text")
-    .attr("dy", "1em")              // vertical offset
+    .attr("dy", "1.5em")              // vertical offset
 
 
   /* ---------- MINOR TICKS (ONLY if secondary labels visible) ---------- */
