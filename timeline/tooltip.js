@@ -1,59 +1,117 @@
+/**
+ * Creates a tooltip DOM element
+ */
 export function createTooltip() {
-  const el = d3.select('body')
-    .append('div')
-    .attr('class', 'timeline-tooltip')
-    .style('position', 'absolute')
-    .style('pointer-events', 'auto') // allow links later
-    .style('opacity', 0);
-
-  function position(event) {
-    el.style('left', `${event.pageX + 12}px`)
-      .style('top', `${event.pageY + 12}px`);
-  }
+  const tooltip = document.createElement('div');
+  tooltip.id = 'tooltip';
+  tooltip.style.cssText = `
+    position: absolute;
+    pointer-events: none;
+    background: rgba(0,0,0,0.7);
+    color: white;
+    padding: 5px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    display: none;
+    z-index: 10;
+  `;
+  document.body.appendChild(tooltip);
 
   return {
-    // existing single-event tooltip (unchanged behavior)
-    show(d, event) {
-      el
-        .style('opacity', 1)
-        .html(`
-          <strong>${d.title}</strong><br/>
-          ${d.date.toDateString()}<br/>
-          ${d.tags}
-        `);
-
-      position(event);
+    show: (html, x, y) => {
+      tooltip.innerHTML = html;
+      tooltip.style.display = 'block';
+      tooltip.style.left = `${x + 10}px`;
+      tooltip.style.top = `${y + 10}px`;
     },
-
-    // 🔹 NEW: grouped tooltip for scrub
-    showGroup(events, event) {
-      if (!events.length) return;
-
-      const date = events[0].date;
-
-      const html = `
-        <div class="tooltip-date">
-          ${d3.timeFormat('%b %d, %Y')(date)}
-        </div>
-        <ul class="tooltip-list">
-          ${events.map(d => `
-            <li class="tooltip-item">
-              <strong>${d.title}</strong><br/>
-              <span class="tooltip-meta">${d.tags}</span>
-            </li>
-          `).join('')}
-        </ul>
-      `;
-
-      el
-        .style('opacity', 1)
-        .html(html);
-
-      position(event);
-    },
-
-    hide() {
-      el.style('opacity', 0);
+    hide: () => {
+      tooltip.style.display = 'none';
     }
   };
 }
+
+export function attachTooltip(canvas, events, xAccessor, yAccessor, radius = 5, highlightCallback) {
+  const tooltip = createTooltip();
+  let quadtree = null;
+  let transformedEvents = [];
+  let currentTransform = d3.zoomIdentity;
+
+  let latestEvent = null;
+  let pendingRender = false;
+
+  function updateTransform(transform) {
+    currentTransform = transform;
+    transformedEvents = events.map(d => ({
+      original: d,
+      x: xAccessor(d, transform),
+      y: yAccessor(d)
+    }));
+    quadtree = d3.quadtree()
+      .x(d => d.x)
+      .y(d => d.y)
+      .addAll(transformedEvents);
+  }
+
+  function renderTooltip() {
+    if (!latestEvent || !quadtree) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const mouseX = latestEvent.clientX - rect.left;
+    const mouseY = latestEvent.clientY - rect.top;
+
+    let found = null;
+
+    quadtree.visit((node, x0, y0, x1, y1) => {
+      if (!node.data) return x0 > mouseX + radius || x1 < mouseX - radius || y0 > mouseY + radius || y1 < mouseY - radius;
+      const d = node.data;
+      const dx = mouseX - d.x;
+      const dy = mouseY - d.y;
+      if (dx * dx + dy * dy <= radius * radius) {
+        found = d.original;
+        return true;
+      }
+      return false;
+    });
+
+    if (found) {
+      tooltip.show(
+        `<strong>${found.title}</strong><br>${d3.timeFormat("%b %d, %Y %H:%M")(found.date)}<br>Lane: ${found.lane}`,
+        latestEvent.clientX,
+        latestEvent.clientY
+      );
+
+      // Call highlight callback with array of one event
+      highlightCallback && highlightCallback([found]);
+    } else {
+      tooltip.hide();
+      highlightCallback && highlightCallback([]);
+    }
+
+    pendingRender = false;
+  }
+
+  canvas.addEventListener('mousemove', e => {
+    latestEvent = e;
+    if (!pendingRender) {
+      pendingRender = true;
+      requestAnimationFrame(renderTooltip);
+    }
+  });
+
+  canvas.addEventListener('mouseleave', () => {
+    tooltip.hide();
+    latestEvent = null;
+    pendingRender = false;
+    highlightCallback && highlightCallback([]);
+  });
+
+  // ✅ add a hide() method
+  function hide() {
+    tooltip.hide();
+    highlightCallback && highlightCallback([]);
+  }
+
+  return { updateTransform, hide }; // <-- now tooltipController.hide() works
+}
+
+
