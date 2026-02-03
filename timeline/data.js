@@ -1,6 +1,6 @@
 export async function loadTimelineData() {
     const res = await fetch(
-        "https://argo.ex-astris.net/tljson?tags=ksedai"
+        "https://argo.ex-astris.net/tljson?tags=azedi"
     );
 
     if (!res.ok) {
