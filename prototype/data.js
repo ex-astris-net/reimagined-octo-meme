@@ -13,7 +13,7 @@ export async function loadTimelineData(url) {
   ]);
 
   // Flatten to array of events, filtering out items without first_post
-  const events = data.topics
+  const events = data.tljson
     .map(item => {
       if (!item.first_post) {
         console.warn('Dropped item with missing first_post:', item);

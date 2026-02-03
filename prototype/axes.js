@@ -83,12 +83,17 @@ export function renderAxes({ zx, axes }) {
       .tickSizeOuter(10)
   );
 
+  axes.major.select(".domain")
+    .attr("stroke", "#eee")
+    .attr("stroke-opacity", 0.4);
+
   axes.major.selectAll(".tick line")
-    .attr("stroke", "#000")
+    .attr("stroke", "#eee")
     .attr("stroke-opacity", 0.15);
 
   axes.major.selectAll("text")
-    .attr("dy", "1.5em")              // vertical offset
+    .attr("dy", "1.5em")
+    .attr("fill", "#eee");
 
 
   /* ---------- MINOR TICKS (ONLY if secondary labels visible) ---------- */
@@ -103,9 +108,15 @@ export function renderAxes({ zx, axes }) {
           .tickSize(9)
           .tickSizeOuter(0)
       );
-  } else {
+
+  }
+  else {
     axes.minorTicks.style("display", "none");
   }
+
+  axes.minorTicks.selectAll(".tick line")
+    .attr("stroke", "#eee")
+    .attr("stroke-opacity", 0.25);
 
   axes.minorTicks.select(".domain").remove();
 
@@ -122,5 +133,6 @@ export function renderAxes({ zx, axes }) {
   axes.secondary.select(".domain").remove();
 
   axes.secondary.selectAll("text")
-    .attr("dy", "2.8em");
+    .attr("dy", "2.8em")
+    .attr("fill", "#eee");
 }

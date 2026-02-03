@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Argo Timeline</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: system-ui, sans-serif;
+      background-color: #112233;
+    }
+
+    #timeline-container {
+      background-color: #234;
+      position: relative;
+      margin: 0 auto;
+      width: 1280px;
+      height: 500px;
+    }
+
+    #panels {
+      margin: 0 auto;
+      width: 1280px;
+      height: 500px;
+      overflow-y: scroll;
+
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+
+      color: #c0c0c0;
+    }
+
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
+    svg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      pointer-events: none; /* canvas gets mouse events */
+    }
+
+    #event-canvas { z-index: 0; }
+    #highlight-canvas { z-index: 1; pointer-events: none; }
+    #overlay { z-index: 2; }
+
+    #pinned-event {
+      background-color: rgba(25,25,25,0.4);
+      margin: 1em;
+      border-radius: 15px;
+      padding: 1em;
+    }
+
+    .meta {
+      display: grid;
+      grid-template-columns: 1fr auto; /* first column auto width, second fills */
+      align-items: start; /* vertically center date & button */
+      margin-bottom: 2em;
+    }
+
+    .meta p { margin: 0; }
+    .meta h3 { margin-top: 1em; }
+
+    /* first row items (date + close button) */
+    .pinned-date {
+      padding-top: 0.5em;
+      grid-column: 1;
+    }
+
+    .pinned-date span {
+      border-radius: 5px; 
+      padding: 0.25em 0.8em;
+      background-color: #234;
+      color: #ccc;
+      text-transform: uppercase;      
+      font-size: 0.9em;
+    }
+
+    .pinned-close {
+      grid-column: 2;
+      justify-self: end; /* move button to the right */
+    }
+
+    /* title and url span both columns */
+    .pinned-title,
+    .pinned-url {
+      grid-column: 1 / -1;
+      margin: 0; /* remove default spacing */
+    }
+
+    #pinned-event a { color: #369; }
+    p.pinned-post { 
+      border-left: 2px solid #369;
+      padding-left: 1em;
+      font-family: 'Ubuntu Mono', monospace; 
+    }
+
+  </style>
+</head>
+<body>
+  <div id="timeline-container">
+    <canvas id="event-canvas"></canvas>
+    <canvas id="highlight-canvas"></canvas>
+    <svg id="overlay"></svg>
+  </div>
+
+  <div id="panels">
+    <div id="pinned-event"> </div>
+    <div id="scrubber-summary"> </div>
+  </div>  
+
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script type="module" src="./index.js"></script>
+
+</body>
+</html>

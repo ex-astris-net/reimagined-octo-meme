@@ -75,7 +75,9 @@ export function attachTooltip(canvas, events, xAccessor, yAccessor, radius = 5, 
 
     if (found) {
       tooltip.show(
-        `<strong>${found.title}</strong><br>${d3.timeFormat("%b %d, %Y %H:%M")(found.date)}<br>Lane: ${found.lane}`,
+        `<strong>${found.title}</strong><br>
+        ${d3.timeFormat("%b %d, %Y %H:%M")(found.date)}<br>
+        Lane: ${found.lane}`,
         latestEvent.clientX,
         latestEvent.clientY
       );

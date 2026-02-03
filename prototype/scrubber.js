@@ -14,7 +14,7 @@ export function createScrubber({
   const line = svg.append("line")
     .attr("y1", 0)
     .attr("y2", height)
-    .attr("stroke", "#ff0000")
+    .attr("stroke", "cyan")
     .attr("stroke-width", 1)
     .attr("pointer-events", "none")
     .style("opacity", 0);
@@ -24,7 +24,7 @@ export function createScrubber({
     .attr("x", svg.attr("width") - 10)
     .attr("y", 20)
     .attr("text-anchor", "end")
-    .attr("fill", "#000")
+    .attr("fill", "#eee")
     .style("font-size", "14px")
     .style("pointer-events", "none")
     .text("");
@@ -34,7 +34,7 @@ export function createScrubber({
   let hoveredEvents = [];       // tooltip hover events
   let currentScrubbed = [];     // currently highlighted by scrubber
 
-  const HOVER_RADIUS_PX = 6;    // pixel radius for scrub highlights
+  const HOVER_RADIUS_PX = 12;    // pixel radius for scrub highlights
 
   function updateTransform(transform) { currentTransform = transform; }
   function show() { if (!hidden) line.style("opacity", 1); }
@@ -64,7 +64,7 @@ export function createScrubber({
       if (currentScrubbed.length > 0) {
         const html = currentScrubbed.map(d =>
           `<strong>${d.title}</strong> (${format(d.date)})<br>Lane: ${d.lane}`
-        ).join('<br><hr style="margin:2px 0">');
+        ).join('<br>');
         summaryDiv.innerHTML = html;
       } else {
         summaryDiv.innerHTML = '';
