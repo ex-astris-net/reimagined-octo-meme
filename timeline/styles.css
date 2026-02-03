@@ -1,0 +1,75 @@
+* { 
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    color: #eee;
+    font-family: system-ui, sans-serif;
+
+    background-color: #112233;
+}
+
+#timeline-container {
+    position: relative;
+    width: 100%;
+    height: 500px;
+    margin-top: 40px;
+
+    background-color: #234;
+}
+
+#timeline-svg,
+#timeline-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+#timeline-svg {
+  pointer-events: none; /* important later */
+}
+
+#panel {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+#pinned {
+  margin: 1em;
+  border-radius: 15px;
+  padding: 1em;
+  background-color: rgba(25,25,25,0.4);
+}
+
+#pinned div.pinned-meta {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  margin-bottom: 1.5em;
+}
+
+#pinned div.pinned-meta button.pin-close {
+  width: 25px;
+}
+
+#pinned div.pinned-meta p.pinned-date {
+  padding-top: 0.5em;
+}
+
+#pinned div.pinned-meta p.pinned-date span {
+  border-radius: 5px; 
+  padding: 0.25em 0.8em;
+  text-transform: uppercase;
+  font-size: 0.9em;
+  background-color: #234;
+  color: #ccc;
+}
+
+#pinned div.pinned-header a { color: #369; }
+
+#pinned div.pinned-post { 
+  margin-top: 1em;
+  border-left: 2px solid #369;
+  padding-left: 1em;
+  font-family: 'Ubuntu Mono', monospace; 
+}

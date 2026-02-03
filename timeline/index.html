@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Timeline</title>
+    <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+    <div id="zoom-buttons">
+        <button data-span="2592000000">1 month</button>
+        <button data-span="31536000000">1 year</button>
+        <button data-span="315360000000">10 years</button>
+    </div>
+
+    <div id="timeline-container">
+        <svg id="timeline-svg"></svg>
+        <canvas id="timeline-canvas"></canvas>
+    </div>
+
+    <div id="panel">
+        <div id="left"> </div>
+        <div id="pinned"> </div>
+    </div>
+
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://d3js.org/d3-time.v3.min.js"></script>
+    <script src="https://d3js.org/d3-scale.v4.min.js"></script>
+    
+    <script type="module" src="data.js"></script>
+    <script type="module" src="index.js"></script>
+
+
+</body>
+</html>
