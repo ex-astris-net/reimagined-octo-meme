@@ -43,26 +43,26 @@ body {
 }
 
 #pinned div.pinned-meta {
-  display: grid;
-  grid-template-columns: 1fr auto;
+  display: flex;
   margin-bottom: 1.5em;
+  column-gap: 1em;
 }
 
 #pinned div.pinned-meta button.pin-close {
   width: 25px;
+  margin-left: auto;
 }
 
-#pinned div.pinned-meta p.pinned-date {
-  padding-top: 0.5em;
-}
-
-#pinned div.pinned-meta p.pinned-date span {
+#pinned div.pinned-meta span {
   border-radius: 5px; 
   padding: 0.25em 0.8em;
-  text-transform: uppercase;
   font-size: 0.9em;
   background-color: #234;
   color: #ccc;
+}
+
+#pinned div.pinned-meta p.pinned-date span {
+  text-transform: uppercase;
 }
 
 #pinned div.pinned-header a { color: #369; }
@@ -72,4 +72,22 @@ body {
   border-left: 2px solid #369;
   padding-left: 1em;
   font-family: 'Ubuntu Mono', monospace; 
+  line-height: 1.3;
+  color: #ddd;
+}
+
+#pinned div.pinned-tags {
+  margin: 1em 0 0 auto;
+  width: 50%;
+  text-align: right;
+}
+
+#pinned div.pinned-tags span {
+  display: inline-block;
+  margin-top: 0.25em;
+  border-radius: 5px;
+  padding: 0.1em 0.25em;
+  background-color: #333;
+  color: #777;
+  font-size: 0.85em;
 }

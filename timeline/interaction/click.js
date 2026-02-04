@@ -1,4 +1,4 @@
-import { state } from "../state.js";
+import { state, categoryColors, rgba } from "../state.js";
 
 export function enableClick(canvas) {
     canvas.addEventListener("click", (e) => {
@@ -36,23 +36,25 @@ function pinEvent(d) {
 
     pinned.innerHTML = `
         <div class="pinned-meta">
-            <p class="pinned-date"><span>${formatDate(d.time)}</span></p>
+            <p class="pinned-date"><span>${formatDate(d.first_post.created_at)}</span></p>
+            <p class="pinned-date-category"><span><b style="color:${rgba(categoryColors[d.category.name], 1) 
+                || d.category.color};">⬤</b>&nbsp;${d.category.name}</span></p>
             <button class="pin-close" aria-label="Close">×</button>
         </div>
 
         <div class="pinned-header">
-            <h3>${d.title}</h3>
-            <p class="pinned-url"><a href="${d.url}">${d.url}</a></p>
+            <h3>${htmlSafe(d.title)}</h3>
+            <p class="pinned-url"><a href="${d.url}" target="_blank">${d.url}</a></p>
         </div>
-
-        ${d.tags?.length
-            ? `<div class="pinned-tags">${d.tags.join(", ")}</div>`
-            : ""
-        }
 
         <div class="pinned-post">
             ${excerpt(cleanupPost(d.first_post.raw))}
         </div>
+
+        ${d.tags?.length
+            ? `<div class="pinned-tags">${d.tags.map(t => `<span>#${t}</span>`).join(" ")}</div>`
+            : ""
+        }
     `;
 
     pinned.classList.add("visible");
@@ -68,6 +70,16 @@ function clearPinned() {
     const pinned = document.getElementById("pinned");
     pinned.innerHTML = "";
     pinned.classList.remove("visible");
+}
+
+function htmlSafe(str) {
+    if (!str) return "";
+    return str
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
 }
 
 function cleanupPost(raw) {
@@ -93,8 +105,10 @@ function cleanupPost(raw) {
         .replace(/\r\n|\r/g, "\n")   // normalize
         .replace(/\n+/g, "<br>");    // convert
 
-    // Optional: trim leftover whitespace
-    return text.trim();
+    // 4. Trim whitespace and remove leading <br> tags
+    text = text.trim().replace(/^(<br>)+/i, "");
+
+    return text;
 }
 
 function excerpt(content) {
@@ -111,9 +125,18 @@ function excerpt(content) {
 function formatDate(ts) {
     const d = new Date(ts);
 
-    return d.toLocaleDateString("en-GB", {
+    const datePart = d.toLocaleDateString("en-GB", {
         day: "numeric",
         month: "short",
         year: "numeric"
     });
+
+    const timePart = d.toLocaleTimeString("en-GB", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false
+    });
+
+    return `${datePart} ${timePart}`;
 }

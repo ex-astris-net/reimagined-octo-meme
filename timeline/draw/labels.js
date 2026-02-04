@@ -1,4 +1,4 @@
-import { state } from "../state.js";
+import { state, categoryColors, rgba } from "../state.js";
 import { timeToX } from "../scales/time.js";
 
 export function drawLabels(ctx, data) {
@@ -33,12 +33,20 @@ export function drawLabels(ctx, data) {
 
     for (let i = 0; i < data.length; i++) {
         const d = data[i];
+
         const x = timeToX(d.time);
 
-        const metaText = (d.tags ?? []).join(" · ");
+        const titleText = d.title.length > state.titleMaxLength ? 
+            d.title.slice(0, state.titleMaxLength) + "..."
+            : d.title;
+
+        const tags = d.tags ?? [];
+        const metaText =
+            tags.slice(0, 5).join(" · ") +
+            (tags.length > 5 ? " · ..." : "");
 
         ctx.font = titleFont;
-        const titleWidth = ctx.measureText(d.title).width;
+        const titleWidth = ctx.measureText(titleText).width;
 
         ctx.font = metaFont;
         const metaWidth = ctx.measureText(metaText).width;
@@ -112,7 +120,8 @@ export function drawLabels(ctx, data) {
         const boxH = rect.h + boxPaddingY * 2;
 
         // background
-        ctx.fillStyle = "rgba(20, 20, 20, 0.75)";
+        const fillBase = categoryColors[d.category.name] ?? [153, 153, 153];
+        ctx.fillStyle = rgba(adjustColor(fillBase, -5), 0.75);
         drawRoundedRect(ctx, boxX, boxY, boxW, boxH, boxRadius);
         ctx.fill();
 
@@ -123,7 +132,7 @@ export function drawLabels(ctx, data) {
         // title
         ctx.font = titleFont;
         ctx.fillStyle = "#fff";
-        ctx.fillText(d.title, textX, labelY);
+        ctx.fillText(titleText, textX, labelY);
 
         // meta
         ctx.font = metaFont;
@@ -161,4 +170,21 @@ function drawRoundedRect(ctx, x, y, w, h, r) {
     ctx.lineTo(x, y + radius);
     ctx.quadraticCurveTo(x, y, x + radius, y);
     ctx.closePath();
+}
+
+function adjustColor(rgb) {
+    const [r, g, b] = rgb;
+
+    // weighted gray for desaturation
+    const gray = 0.299 * r + 0.587 * g + 0.114 * b;
+
+    return [r, g, b].map(v => {
+        // move toward gray (desaturate ~45%)
+        const mixed = v + (gray - v) * 0.20;
+
+        // then darken (~35%)
+        const darkened = mixed * 0.45;
+
+        return Math.round(Math.max(0, Math.min(255, darkened)));
+    });
 }

@@ -7,14 +7,15 @@ export function drawAxis(svg) {
     svg.innerHTML = "";
 
     const span = state.viewEnd - state.viewStart;
-    const tickInterval = getTickInterval(span);
+    const { interval, format } = getTickConfig(span);
 
     const scale = d3.scaleTime()
         .domain([new Date(state.viewStart), new Date(state.viewEnd)])
         .range([0, state.width]);
 
     const axis = d3.axisBottom(scale)
-        .ticks(tickInterval)
+        .ticks(interval)
+        .tickFormat(format)
         .tickSize(-state.height)
         .tickPadding(8);
 
@@ -60,12 +61,21 @@ function drawCenterLine(svg) {
     svg.appendChild(line);
 }
 
-function getTickInterval(span) {
+function getTickConfig(span) {
     if (span <= 30 * DAY) {
-        return d3.timeDay.every(1);      // ✅ days allowed
+        return {
+            interval: d3.timeDay.every(1),
+            format: d3.timeFormat("%a %d") // Fri 27
+        };
     }
     if (span <= 365 * DAY) {
-        return d3.timeMonth.every(1);
+        return {
+            interval: d3.timeMonth.every(1),
+            format: d3.timeFormat("%b %Y") // Jun 2024
+        };
     }
-    return d3.timeYear.every(1);
+    return {
+        interval: d3.timeYear.every(1),
+        format: d3.timeFormat("%Y") // 2024
+    };
 }
