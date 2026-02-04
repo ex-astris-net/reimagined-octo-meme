@@ -125,10 +125,6 @@ export function drawLabels(ctx, data) {
         drawRoundedRect(ctx, boxX, boxY, boxW, boxH, boxRadius);
         ctx.fill();
 
-        // outline
-        ctx.strokeStyle = "rgba(255, 255, 255, 0.25)";
-        ctx.stroke();
-
         // title
         ctx.font = titleFont;
         ctx.fillStyle = "#fff";
