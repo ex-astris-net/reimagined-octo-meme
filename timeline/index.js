@@ -9,6 +9,7 @@ import { enablePan } from "./interaction/pan.js";
 import { enableZoom, MIN_SPAN, MAX_SPAN } from "./interaction/zoom.js";
 import { enableClick } from "./interaction/click.js";
 import { enableMinimapInteraction } from "./interaction/minimap.js";
+import { enableKeyboardPan } from "./interaction/keyboard.js";
 
 const INITIAL_SPAN = 1 * 365 * 24 * 60 * 60 * 1000;   // 1 year
 const OUT_OF_BOUNDS_PADDING = 0.25;
@@ -106,6 +107,10 @@ enableZoom(canvas, () => {
 enableClick(canvas);
 
 enableMinimapInteraction(minimap, () => {
+    drawAll();
+});
+
+enableKeyboardPan(() => {
     drawAll();
 });
 

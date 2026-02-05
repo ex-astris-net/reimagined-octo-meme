@@ -121,7 +121,7 @@ export function drawLabels(ctx, data) {
 
         // background
         const fillBase = categoryColors[d.category.name] ?? [153, 153, 153];
-        ctx.fillStyle = rgba(adjustColor(fillBase, -5), 0.75);
+        ctx.fillStyle = rgba(adjustColor(fillBase, -5), 0.90);
         drawRoundedRect(ctx, boxX, boxY, boxW, boxH, boxRadius);
         ctx.fill();
 

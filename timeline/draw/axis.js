@@ -1,5 +1,4 @@
 import { state } from "../state.js";
-import { updateTimeScale } from "../scales/time.js";
 
 const DAY = 24 * 60 * 60 * 1000;
 
@@ -33,7 +32,8 @@ export function drawAxis(svg) {
 
     d3.select(axisGroup)
         .selectAll(".tick line")
-        .attr("stroke", "rgba(255,255,255,0.15)");
+        .attr("stroke", "#123");
+        //.attr("stroke", "rgba(255,255,255,0.15)");
 
     d3.select(axisGroup)
         .select(".domain")
