@@ -1,8 +1,8 @@
 import { state } from "../state.js";
 import { xToTime, updateTimeScale } from "../scales/time.js";
 
-const MIN_SPAN = 10 * 24 * 60 * 60 * 1000;     // 1 day
-const MAX_SPAN = 10 * 365 * 24 * 60 * 60 * 1000; // 10 years
+export const MIN_SPAN = 10 * 24 * 60 * 60 * 1000;     // 1 day
+export const MAX_SPAN = 10 * 365 * 24 * 60 * 60 * 1000; // 10 years
 
 export function enableZoom(canvas, onZoom) {
     canvas.addEventListener("wheel", (e) => {

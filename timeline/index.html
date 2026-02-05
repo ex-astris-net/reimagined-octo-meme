@@ -7,10 +7,16 @@
 </head>
 <body>
 
-    <div id="zoom-buttons">
-        <button data-span="2592000000">1 month</button>
-        <button data-span="31536000000">1 year</button>
-        <button data-span="315360000000">10 years</button>
+    <div id="timeline-controls">
+        <div id="zoom-buttons">
+            <button data-span="2592000000">1 month</button>
+            <button data-span="10368000000">1 quarter</button>
+            <button data-span="31536000000">1 year</button>
+            <button data-span="157680000000">5 years</button>
+            <button data-span="315360000000">10 years</button>
+        </div>
+
+        <canvas id="minimap-canvas" height="60"></canvas>
     </div>
 
     <div id="timeline-container">

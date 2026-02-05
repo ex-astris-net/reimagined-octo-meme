@@ -10,6 +10,23 @@ body {
     background-color: #112233;
 }
 
+#timeline-controls {
+    display: grid;  
+    grid-template-columns: 1fr 1fr;
+    margin-top: 10px;
+}
+
+#minimap-canvas, #zoom-buttons { margin: 0 auto; }
+#zoom-buttons button { padding: 0.15em; }
+
+#minimap-canvas {
+    display: block;
+    width: 60%;
+    height: 100px;
+
+    background-color: rgba(25,25,25,0.9);
+}
+
 #timeline-container {
     position: relative;
     width: 100%;
@@ -27,7 +44,7 @@ body {
 }
 
 #timeline-svg {
-  pointer-events: none; /* important later */
+  pointer-events: none;
 }
 
 #panel {

@@ -3,15 +3,22 @@ import { loadTimelineData } from "./data.js";
 import { drawAxis } from "./draw/axis.js";
 import { drawDots } from "./draw/dots.js";
 import { drawLabels } from "./draw/labels.js";
+import { initMinimap, drawMinimap } from "./draw/minimap.js";
 import { updateTimeScale } from "./scales/time.js";
 import { enablePan } from "./interaction/pan.js";
-import { enableZoom } from "./interaction/zoom.js";
+import { enableZoom, MIN_SPAN, MAX_SPAN } from "./interaction/zoom.js";
 import { enableClick } from "./interaction/click.js";
+import { enableMinimapInteraction } from "./interaction/minimap.js";
+
+const INITIAL_SPAN = 1 * 365 * 24 * 60 * 60 * 1000;   // 1 year
+const OUT_OF_BOUNDS_PADDING = 0.25;
 
 // DOM
 const container = document.getElementById("timeline-container");
 const canvas = document.getElementById("timeline-canvas");
 const svg = document.getElementById("timeline-svg");
+const minimap = document.getElementById("minimap-canvas");
+const minimapCtx = minimap.getContext("2d");
 const ctx = canvas.getContext("2d");
 const dpr = window.devicePixelRatio || 1;
 
@@ -19,6 +26,10 @@ const dpr = window.devicePixelRatio || 1;
 state.width = container.clientWidth;
 state.height = container.clientHeight;
 state.centerY = state.height / 2;
+
+state.minimapWidth = container.clientWidth;
+state.minimapHeight = minimap.height;
+minimap.width = state.minimapWidth;
 
 canvas.width = state.width * dpr;
 canvas.height = state.height * dpr;
@@ -37,6 +48,36 @@ console.log("data =", data);
 const times = data.map(d => d.time);
 state.viewStart = Math.min(...times);
 state.viewEnd = Math.max(...times);
+state.dataMin = Math.min(...times);
+state.dataMax = Math.max(...times);
+
+const dataSpan = state.dataMax - state.dataMin;
+
+state.timeMin = state.dataMin - dataSpan * OUT_OF_BOUNDS_PADDING;
+state.timeMax = state.dataMax + dataSpan * OUT_OF_BOUNDS_PADDING;
+
+const span = Math.min(
+    MAX_SPAN,
+    Math.max(MIN_SPAN, Math.min(INITIAL_SPAN, dataSpan))
+);
+
+const center = (state.dataMin + state.dataMax) / 2;
+
+state.viewStart = center - span / 2;
+state.viewEnd = center + span / 2;
+
+// clamp
+if (state.viewStart < state.dataMin) {
+    state.viewStart = state.dataMin;
+    state.viewEnd = state.viewStart + span;
+}
+if (state.viewEnd > state.dataMax) {
+    state.viewEnd = state.dataMax;
+    state.viewStart = state.viewEnd - span;
+}
+// ----------------------------
+
+initMinimap(data);
 
 // Before drawing
 updateTimeScale();
@@ -47,6 +88,7 @@ function drawAll() {
     drawAxis(svg);
     drawLabels(ctx, data);
     drawDots(ctx, data);
+    drawMinimap(minimapCtx, data);
 }
 
 // Initial draw
@@ -62,6 +104,11 @@ enableZoom(canvas, () => {
 });
 
 enableClick(canvas);
+
+enableMinimapInteraction(minimap, () => {
+    drawAll();
+});
+
 
 // Zoom buttons
 const buttons = document.querySelectorAll("#zoom-buttons button");
