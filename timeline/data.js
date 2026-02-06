@@ -1,6 +1,38 @@
-export async function loadTimelineData() {
+export const tagStore = {};
+export const eventStore = {};
+
+export async function initTagStore() {
+    const allTags = await fetchAllTags();
+    
+    for (const tag of allTags) {
+        tagStore[tag.name] = {
+            ...tag,
+            fetched: false,
+            ids: new Set()
+        };
+    }
+}
+
+export async function loadTagToStore(tagName) {
+    console.log("Loading", tagName, "to tagStore...");
+    if (tagStore[tagName]?.fetched)
+      return;
+
+    const tagEvents = await fetchTagEvents(tagName);
+
+    for (const event of tagEvents) {
+        if (!eventStore[event.id]) {
+            eventStore[event.id] = event;
+        }
+        tagStore[tagName].ids.add(event.id);
+    }
+
+    tagStore[tagName].fetched = true;
+}
+
+async function fetchTagEvents(tagName) {
     const res = await fetch(
-        "https://argo.ex-astris.net/tljson?tags=azedi"
+        "https://argo.ex-astris.net/tljson?tags=" + tagName
     );
 
     if (!res.ok) {
@@ -29,6 +61,18 @@ export async function loadTimelineData() {
             url: d.url
         };
     });
+}
+
+async function fetchAllTags() {
+    const res = await fetch("https://argo.ex-astris.net/tljson");
+
+    if (!res.ok) {
+        throw new Error("Failed to load tags");
+    }
+
+    const raw = await res.json();
+
+    return raw.tljson;
 }
 
 function randomizeTimeSameDay(ts) {
