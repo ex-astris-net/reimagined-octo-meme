@@ -81,7 +81,8 @@ const timelineState = {
     renderedEvents: [],
     filters: {
       activeTags: new Set([tagToStartWith]),
-      activeCategories: new Set()
+      activeCategories: new Set(),
+      mode: "OR" // or "AND". obviously.
     }
 };
 
@@ -98,6 +99,12 @@ const filtersUI = populateFilters(tagStore, timelineState.filters, {
         }
         
         dataUpdatedRedraw();
+    },
+    onSwitchToggle: async (mode) => {
+        console.log("onSwitchToggling", mode);
+        timelineState.filters.mode = mode;
+
+        dataUpdatedRedraw();
     }
 });
 
@@ -110,25 +117,33 @@ function dataUpdatedRedraw() {
 
 function fitDataToFilters() {
     console.log("Fitting data to filters...");
-    const activeTags = timelineState.filters.activeTags;
+
+    const { activeTags, mode } = timelineState.filters;
 
     if (!activeTags || activeTags.size === 0) {
-        timelineState.renderedEvents = Array.from(new Set());
+        timelineState.renderedEvents = [];
+        return;
     }
 
-    const filteredEvents = new Set();
+    const activeTagList = [...activeTags];
 
-    for (const tag of activeTags) {
-        const entry = tagStore[tag];
-        if (!entry?.fetched) continue;
+    timelineState.renderedEvents = Object.values(eventStore).filter(event => {
+        if (!event?.tags || event.tags.length === 0) return false;
 
-        for (const id of entry.ids) {
-            filteredEvents.add(eventStore[id]);
+        if (mode === "OR") {
+            // Event matches if it has *any* active tag
+            return activeTagList.some(tag => event.tags.includes(tag));
         }
-    }
 
-    timelineState.renderedEvents = Array.from(filteredEvents);
-    console.log("timelineState.renderedEvents =", timelineState.renderedEvents);
+        // AND
+        // Event matches if it has *all* active tags
+        return activeTagList.every(tag => event.tags.includes(tag));
+    });
+
+    console.log(
+        "timelineState.renderedEvents =",
+        timelineState.renderedEvents
+    );
 }
 
 

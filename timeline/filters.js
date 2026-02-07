@@ -1,11 +1,11 @@
 // filters.js
 
 // --- Main entry point (exported) ---
-export function populateFilters(tagStore, filterState, { onTagToggle } = {}) {
+export function populateFilters(tagStore, filterState, { onTagToggle, onSwitchToggle } = {}) {
     const container = document.getElementById("filters");
     container.innerHTML = "";
 
-    const activeSection = createActiveSection(tagStore, filterState, onTagToggle);
+    const activeSection = createActiveSection(tagStore, filterState, onTagToggle, onSwitchToggle);
     const browseSection = createBrowseSection(tagStore, filterState, activeSection, onTagToggle);
 
     const { controlsEl, searchInput, groupSelect } = createControls();
@@ -51,10 +51,45 @@ export function populateFilters(tagStore, filterState, { onTagToggle } = {}) {
 // =====================
 
 // --- Active section module ---
-function createActiveSection(tagStore, filterState, onTagToggle) {
+function createActiveSection(tagStore, filterState, onTagToggle, onSwitchToggle) {
     const container = document.createElement("div");
     container.className = "active-tags";
 
+    // --- Mode switch wrapper ---
+    const modeWrapper = document.createElement("div");
+    modeWrapper.className = "mode-wrapper";
+
+    // 1️⃣ Background track
+    const switchBg = document.createElement("div");
+    switchBg.className = "switch-background";
+
+    // 2️⃣ Labels (ON | OFF)
+    const switchLabel = document.createElement("div");
+    switchLabel.className = "switch-label";
+    switchLabel.textContent = "ORㅤAND";
+
+    // 3️⃣ Slider knob
+    const switchKnob = document.createElement("div");
+    switchKnob.className = "switch-knob";
+    switchKnob.style.transform = filterState.mode === "AND" ? "translateX(0%)" : "translateX(100%)";
+
+    // Assemble DOM
+    modeWrapper.appendChild(switchBg);
+    modeWrapper.appendChild(switchLabel);
+    modeWrapper.appendChild(switchKnob);
+    container.appendChild(modeWrapper);
+
+    // --- Click toggles mode ---
+    modeWrapper.addEventListener("click", () => {
+        filterState.mode = filterState.mode === "AND" ? "OR" : "AND";
+        switchKnob.style.transform = filterState.mode === "AND" ? "translateX(0%)" : "translateX(100%)";
+
+        if (typeof onSwitchToggle === "function") {
+            onSwitchToggle(filterState.mode);
+        }
+    });
+
+    // --- Function to add a tag pill ---
     function addTag(tagName, browseSection) {
         const tag = tagStore[tagName];
         if (!tag) return;
@@ -78,8 +113,9 @@ function createActiveSection(tagStore, filterState, onTagToggle) {
         container.appendChild(pill);
     }
 
-    return { container, addTag };
+    return { container, addTag, modeWrapper, switchKnob };
 }
+
 
 // --- Browse section module ---
 function createBrowseSection(tagStore, filterState, activeSection, onTagToggle) {
