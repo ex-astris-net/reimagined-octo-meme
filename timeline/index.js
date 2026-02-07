@@ -11,7 +11,7 @@ import { drawAxis } from "./draw/axis.js";
 import { drawDots } from "./draw/dots.js";
 import { drawLabels } from "./draw/labels.js";
 import { initMinimap, drawMinimap } from "./draw/minimap.js";
-import { populateFilters } from "./draw/filters.js";
+import { populateFilters } from "./filters.js";
 
 // Scales
 import { updateTimeScale } from "./scales/time.js";
@@ -75,7 +75,7 @@ minimap.width = state.minimapWidth;
  * Data Load 
  * ========================================================== */
 
-const tagToStartWith = 'aev';
+const tagToStartWith = 'azedi';
 
 const timelineState = {
     renderedEvents: [],
@@ -90,7 +90,16 @@ await initTagStore();
 // initial values
 await loadTagToStore(tagToStartWith);
 fitDataToFilters();
-populateFilters(tagStore, timelineState.filters);
+
+const filtersUI = populateFilters(tagStore, timelineState.filters, {
+    onTagToggle: async (tagName, added) => { 
+        if (added && !tagStore[tagName].fetched) {
+            await loadTagToStore(tagName);
+        }
+        
+        dataUpdatedRedraw();
+    }
+});
 
 // primary data rendering loop
 function dataUpdatedRedraw() {
@@ -227,30 +236,4 @@ zoomButtons.forEach(btn => {
     });
 });
 
-const filterButtons = document.querySelectorAll("#filters button");
 
-filterButtons.forEach(btn => {
-    btn.addEventListener("click", async (e) => {
-        const tagName = e.currentTarget.dataset.tag;
-        toggleTag(tagName);
-        await loadTagToStore(tagName);
-
-        // re-render UI
-        dataUpdatedRedraw();
-    });
-});
-
-async function toggleTag(tagName) {
-    if (timelineState.filters.activeTags.has(tagName)) {
-        console.log("Removing", tagName, "from tag filters.");
-        timelineState.filters.activeTags.delete(tagName);
-    } 
-    else {
-        console.log("Adding", tagName, "from tag filters.");
-        timelineState.filters.activeTags.add(tagName);
-
-        if (!tagStore[tagName].fetched) {
-            await loadTagToStore(tagName);
-        }
-    }
-}
