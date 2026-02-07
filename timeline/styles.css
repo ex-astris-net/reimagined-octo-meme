@@ -118,7 +118,7 @@ body {
 }
 
 #filters .active-tags { 
-  height: 50px;
+  height: 75px;
   padding: 1em; 
   overflow-y: auto;
 }
@@ -177,7 +177,7 @@ body {
   position: absolute;
   width: 50%;
   height: 100%;
-  background: #336699;
+  background: #239edd;
   border-radius: 12px;
   top: 0;
   left: 0;
