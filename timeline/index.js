@@ -14,7 +14,7 @@ import { initMinimap, drawMinimap } from "./draw/minimap.js";
 import { populateFilters } from "./filters.js";
 
 // Scales
-import { updateTimeScale } from "./scales/time.js";
+import { computeTimeDomain, updateTimeScale } from "./scales/time.js";
 
 // Interaction
 import { enablePan } from "./interaction/pan.js";
@@ -29,7 +29,6 @@ import { enableKeyboardPan } from "./interaction/keyboard.js";
  * ========================================================== */
 
 const INITIAL_SPAN = 1 * 365 * 24 * 60 * 60 * 1000;   // 1 year
-const OUT_OF_BOUNDS_PADDING = 0.25;                   // % extra time on each side
 
 
 /* ============================================================
@@ -110,7 +109,8 @@ const filtersUI = populateFilters(tagStore, timelineState.filters, {
 
 // primary data rendering loop
 function dataUpdatedRedraw() {
-    fitDataToFilters();    
+    fitDataToFilters();
+    computeTimeDomain(timelineState.renderedEvents);
     initMinimap(timelineState.renderedEvents);
     drawAll();
 }
@@ -151,15 +151,7 @@ function fitDataToFilters() {
  * Time Domain Initialization
  * ========================================================== */
 
-const times = timelineState.renderedEvents.map(d => d.time);
-state.dataMin = Math.min(...times);
-state.dataMax = Math.max(...times);
-
-const dataSpan = state.dataMax - state.dataMin;
-
-// Allow panning beyond data bounds
-state.timeMin = state.dataMin - dataSpan * OUT_OF_BOUNDS_PADDING;
-state.timeMax = state.dataMax + dataSpan * OUT_OF_BOUNDS_PADDING;
+const dataSpan = computeTimeDomain(timelineState.renderedEvents);
 
 // Choose a valid initial view span
 const span = Math.min(

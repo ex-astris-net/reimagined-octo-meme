@@ -128,6 +128,11 @@ body {
   justify-content: space-between;
 }
 
+#filters .controls input, 
+#filters .controls select {
+  background-color: #90bfbd;
+}
+
 #filters .controls input.tag-search {
   width: 50%;
   padding: 0.25em;
