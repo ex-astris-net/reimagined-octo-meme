@@ -29,6 +29,9 @@ import { enableKeyboardPan } from "./interaction/keyboard.js";
  * ========================================================== */
 
 const INITIAL_SPAN = 1 * 365 * 24 * 60 * 60 * 1000;   // 1 year
+const REAL_CATEGORIES = new Set([
+  "Open Frequency", "Mission Briefs (Events)", "Communications", "Reports"
+]);
 
 
 /* ============================================================
@@ -80,7 +83,7 @@ const timelineState = {
     renderedEvents: [],
     filters: {
       activeTags: new Set([tagToStartWith]),
-      activeCategories: new Set(),
+      activeCategories: new Set(["Open Frequency", "Reports", "Other"]),
       mode: "OR" // or "AND". obviously.
     }
 };
@@ -100,8 +103,15 @@ const filtersUI = populateFilters(tagStore, timelineState.filters, {
         dataUpdatedRedraw();
     },
     onSwitchToggle: async (mode) => {
-        console.log("onSwitchToggling", mode);
         timelineState.filters.mode = mode;
+
+        dataUpdatedRedraw();
+    },
+    onCheckboxToggle: async (category) => {
+        if (timelineState.filters.activeCategories.has(category))
+          timelineState.filters.activeCategories.delete(category);
+        else
+          timelineState.filters.activeCategories.add(category);
 
         dataUpdatedRedraw();
     }
@@ -118,7 +128,7 @@ function dataUpdatedRedraw() {
 function fitDataToFilters() {
     console.log("Fitting data to filters...");
 
-    const { activeTags, mode } = timelineState.filters;
+    const { activeCategories, activeTags, mode } = timelineState.filters;
 
     if (!activeTags || activeTags.size === 0) {
         timelineState.renderedEvents = [];
@@ -128,22 +138,34 @@ function fitDataToFilters() {
     const activeTagList = [...activeTags];
 
     timelineState.renderedEvents = Object.values(eventStore).filter(event => {
+        if (!matchesCategory(activeCategories, event)) return false;
+
         if (!event?.tags || event.tags.length === 0) return false;
 
         if (mode === "OR") {
-            // Event matches if it has *any* active tag
             return activeTagList.some(tag => event.tags.includes(tag));
         }
 
-        // AND
-        // Event matches if it has *all* active tags
         return activeTagList.every(tag => event.tags.includes(tag));
     });
+}
 
-    console.log(
-        "timelineState.renderedEvents =",
-        timelineState.renderedEvents
-    );
+function matchesCategory(activeCategories, event) {
+  // No active filter → allow all
+  if (activeCategories.size === 0) return true;
+
+  const name = event.category?.name;
+  if (!name) return false;
+
+  const isRealCategory = REAL_CATEGORIES.has(name);
+
+  // "Other" = not a real category
+  if (!isRealCategory) {
+    return activeCategories.has("Other");
+  }
+
+  // Real category
+  return activeCategories.has(name);
 }
 
 

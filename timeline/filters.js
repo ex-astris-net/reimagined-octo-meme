@@ -1,16 +1,17 @@
 // filters.js
 
 // --- Main entry point (exported) ---
-export function populateFilters(tagStore, filterState, { onTagToggle, onSwitchToggle } = {}) {
+export function populateFilters(tagStore, filterState, { onTagToggle, onSwitchToggle, onCheckboxToggle } = {}) {
     const container = document.getElementById("filters");
     container.innerHTML = "";
 
+    const categoryList = createCategoryList(tagStore, filterState, onCheckboxToggle);
     const activeSection = createActiveSection(tagStore, filterState, onTagToggle, onSwitchToggle);
     const browseSection = createBrowseSection(tagStore, filterState, activeSection, onTagToggle);
 
     const { controlsEl, searchInput, groupSelect } = createControls();
 
-    container.append(activeSection.container, controlsEl, browseSection.container);
+    container.append(categoryList.container, activeSection.container, controlsEl, browseSection.container);
 
     // Initialize browse section with controls
     browseSection.init(searchInput, groupSelect);
@@ -114,6 +115,44 @@ function createActiveSection(tagStore, filterState, onTagToggle, onSwitchToggle)
     }
 
     return { container, addTag, modeWrapper, switchKnob };
+}
+
+function createCategoryList(tagStore, filterState, onCheckboxToggle) {
+    const container = document.createElement("div");
+    container.className = "category-list";
+
+    const filterCategories = {
+        "Open Frequency": 'open-freq', 
+        "Mission Briefs (Events)": 'mission-briefs', 
+        "Communications": 'communications', 
+        "Reports": 'reports',
+        "Other": 'other'
+    };
+
+    for (const [category, className] of Object.entries(filterCategories)) {
+        const item = document.createElement("div");
+        item.className = `category-filter ${className}`;
+
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.dataset.name = category;
+        checkbox.checked = filterState.activeCategories.has(category);
+
+        const label = document.createElement("label");
+        label.textContent = category;
+
+        // add item.onclick
+        item.onclick = async () => {
+            if (onCheckboxToggle) await onCheckboxToggle(checkbox.dataset.name, true);
+        }
+
+        label.prepend(checkbox);
+        item.appendChild(label);
+        container.appendChild(item);
+        filterCategories[category] = item;
+    };
+
+    return { container };
 }
 
 

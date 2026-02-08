@@ -3,7 +3,7 @@ export const eventStore = {};
 
 export async function initTagStore() {
     const allTags = await fetchAllTags();
-    console.log(allTags);
+    // console.log(allTags);
     
     for (const tag of allTags) {
         tagStore[tag.name] = {
@@ -41,7 +41,7 @@ async function fetchTagEvents(tagName) {
     }
 
     const raw = await res.json();
-    console.log("raw =", raw);
+    // console.log("raw =", raw);
 
     return raw.tljson.map((d, i) => {
         const created = new Date(d.first_post.created_at).getTime();
