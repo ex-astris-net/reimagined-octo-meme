@@ -142,6 +142,7 @@ function createBrowseSection(tagStore, filterState, activeSection, onTagToggle) 
         item.className = "browse-tag";
         item.dataset.tag = tag.name;
         item.dataset.groups = tag.tag_groups.join(",");
+        item.dataset.description = (tag.description || "").toLowerCase();
         item.textContent = tag.name;
 
         item.onclick = async () => {
@@ -181,7 +182,9 @@ function createBrowseSection(tagStore, filterState, activeSection, onTagToggle) 
 
             const groups = item.dataset.groups.split(",");
             const inScope = scope === "__all__" || groups.includes(scope);
-            const matchesQuery = !query || tagName.toLowerCase().includes(currentQuery);
+            const matchesQuery = !currentQuery ||
+                tagName.toLowerCase().includes(currentQuery) ||
+                item.dataset.description.includes(currentQuery);
 
             item.style.display = inScope && matchesQuery ? "inline-block" : "none";
         }

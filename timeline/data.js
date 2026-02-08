@@ -3,6 +3,7 @@ export const eventStore = {};
 
 export async function initTagStore() {
     const allTags = await fetchAllTags();
+    console.log(allTags);
     
     for (const tag of allTags) {
         tagStore[tag.name] = {

@@ -130,6 +130,7 @@ body {
 
 #filters .controls input, 
 #filters .controls select {
+  border-radius: 5px;
   background-color: #90bfbd;
 }
 
@@ -190,59 +191,6 @@ body {
   z-index: 2; /* slider sits above labels */
 }
 
-
-
-/* 
-#filters .active-tags .mode-wrapper {
-  position: relative;
-  width: 50px;
-  height: 24px;
-  float: right;
-}
-
-#filters .active-tags .mode-switch-wrapper {
-  width: 50px;
-  height: 24px;
-  background: #456;
-  border-radius: 12px;
-  position: relative;
-  cursor: pointer;
-  margin-bottom: 4px;
-
-  position: absolute;
-}
-
-#filters .active-tags .mode-switch-slider {
-  width: 50%;
-  height: 100%;
-  background: #336699;
-  border-radius: 12px;
-  transition: transform 0.2s ease;
-}
-
-#filters .active-tags .mode-label {
-  font-size: 12px;
-  text-align: center;
-  user-select: none;
-  display: inline-block;
-  font-family: 'Arial Narrow', sans-serif;
-  color: #abc;
-  margin-top: 5px;
-}
-
-#filters .active-tags .mode-label.mode-on {
-  position: absolute;
-  top: 0;
-  right: 0;
-}
-
-#filters .active-tags .mode-label.mode-off {
-  position: absolute;
-  top: 0;
-  left: 0;
-  margin-left: 7px;
-} */
-
 #filters .active-tags span.tag-pill {
   white-space: nowrap;
 }
@@ -261,8 +209,7 @@ body {
   appearance: none;
   background: none;
   border: none;
-  padding: 0;
-  margin: 0 0 0 0.5em;
+  padding: 0.25em 0 0.25em 0.5em;
   cursor: pointer;
 
   font-size: 14px;
