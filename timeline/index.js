@@ -77,13 +77,13 @@ minimap.width = state.minimapWidth;
  * Data Load 
  * ========================================================== */
 
-const tagToStartWith = 'azedi';
+const tagToStartWith = 'sto';
 
 const timelineState = {
     renderedEvents: [],
     filters: {
       activeTags: new Set([tagToStartWith]),
-      activeCategories: new Set(["Open Frequency", "Reports", "Other"]),
+      activeCategories: new Set(["Open Frequency", "Reports"]),
       mode: "OR" // or "AND". obviously.
     }
 };
