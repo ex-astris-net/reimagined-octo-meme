@@ -138,10 +138,6 @@ body {
   justify-content: space-between;
 }
 
-#filters .category-list {
-  font-size: 12px;
-}
-
 #filters .category-list input {
   margin-right: 5px;
 }
@@ -149,6 +145,7 @@ body {
 #filters .category-list div.category-filter { 
   border-radius: 5px;
   padding: 0.25em 0.5em;
+  white-space: nowrap;
 }
 
 #filters .category-list div.category-filter.open-freq { background-color: #582724; }
