@@ -7,26 +7,30 @@
 </head>
 <body>
 
-    <div id="timeline-controls">
-        <div id="zoom-buttons">
-            <button data-span="2592000000">1 month</button>
-            <button data-span="10368000000">1 quarter</button>
-            <button data-span="31536000000">1 year</button>
-            <button data-span="157680000000">5 years</button>
-            <button data-span="315360000000">10 years</button>
+    <div id="shell">
+
+        <div id="timeline-controls">
+            <div id="zoom-buttons">
+                <button data-span="2592000000">1 month</button>
+                <button data-span="10368000000">1 quarter</button>
+                <button data-span="31536000000">1 year</button>
+                <button data-span="157680000000">5 years</button>
+                <button data-span="315360000000">10 years</button>
+            </div>
+
+            <canvas id="minimap-canvas" height="60"></canvas>
         </div>
 
-        <canvas id="minimap-canvas" height="60"></canvas>
-    </div>
+        <div id="timeline-container">
+            <svg id="timeline-svg"></svg>
+            <canvas id="timeline-canvas"></canvas>
+        </div>
 
-    <div id="timeline-container">
-        <svg id="timeline-svg"></svg>
-        <canvas id="timeline-canvas"></canvas>
-    </div>
+        <div id="panel">
+            <div id="filters"> </div>
+            <div id="pinned"> </div>
+        </div>
 
-    <div id="panel">
-        <div id="filters"> </div>
-        <div id="pinned"> </div>
     </div>
 
     <script src="https://d3js.org/d3.v7.min.js"></script>

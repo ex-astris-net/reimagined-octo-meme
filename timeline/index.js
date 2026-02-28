@@ -28,7 +28,7 @@ import { enableKeyboardPan } from "./interaction/keyboard.js";
  * Configuration
  * ========================================================== */
 
-const INITIAL_SPAN = 1 * 365 * 24 * 60 * 60 * 1000;   // 1 year
+const INITIAL_SPAN = 3 * 365 * 24 * 60 * 60 * 1000;   // 3 years
 const REAL_CATEGORIES = new Set([
   "Open Frequency", "Mission Briefs (Events)", "Communications", "Reports"
 ]);
@@ -52,25 +52,35 @@ const dpr = window.devicePixelRatio || 1;
  * Layout / Sizing
  * ========================================================== */
 
-state.width = container.clientWidth;
-state.height = container.clientHeight;
-state.centerY = state.height / 2;
 
-// Main canvas (HiDPI-safe)
-canvas.width = state.width * dpr;
-canvas.height = state.height * dpr;
-canvas.style.width = `${state.width}px`;
-canvas.style.height = `${state.height}px`;
-ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+function resizeCanvas() {
+  const rect = container.getBoundingClientRect();
 
-// SVG overlay
-svg.setAttribute("width", state.width);
-svg.setAttribute("height", state.height);
+  state.width = rect.width;
+  state.height = rect.height;
+  state.centerY = state.height / 2;
 
-// Minimap sizing
-state.minimapWidth = container.clientWidth;
-state.minimapHeight = minimap.height;
-minimap.width = state.minimapWidth;
+  canvas.width = Math.round(rect.width * dpr);
+  canvas.height = Math.round(rect.height * dpr);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  svg.setAttribute("width", rect.width);
+  svg.setAttribute("height", rect.height);
+
+  state.minimapWidth = rect.width;
+  state.minimapHeight = minimap.height;
+  minimap.width = state.minimapWidth;
+}
+
+const ro = new ResizeObserver(() => {
+  resizeCanvas();
+  updateTimeScale();
+  drawAll();
+});
+
+ro.observe(container);
+
+resizeCanvas(); // run once immediately so state is populated before anything else uses it
 
 
 /* ============================================================
@@ -83,7 +93,7 @@ const timelineState = {
     renderedEvents: [],
     filters: {
       activeTags: new Set([tagToStartWith]),
-      activeCategories: new Set(["Open Frequency", "Reports"]),
+      activeCategories: new Set(["Open Frequency", "Mission Briefs (Events)", "Reports"]),
       mode: "OR" // or "AND". obviously.
     }
 };
