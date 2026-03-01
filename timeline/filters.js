@@ -137,12 +137,17 @@ function createCategoryList(tagStore, filterState, onCheckboxToggle) {
         checkbox.type = "checkbox";
         checkbox.dataset.name = category;
         checkbox.checked = filterState.activeCategories.has(category);
+        checkbox.onclick = (e) => e.stopPropagation();
+        checkbox.onchange = async () => {
+            if (onCheckboxToggle) await onCheckboxToggle(checkbox.dataset.name);
+        };
 
         const label = document.createElement("label");
         label.textContent = category;
 
         // add item.onclick
         item.onclick = async () => {
+            checkbox.checked = !checkbox.checked;
             if (onCheckboxToggle) await onCheckboxToggle(checkbox.dataset.name, true);
         }
 

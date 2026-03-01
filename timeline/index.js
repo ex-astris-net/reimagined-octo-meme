@@ -84,6 +84,34 @@ resizeCanvas(); // run once immediately so state is populated before anything el
 
 
 /* ============================================================
+ * URL params/writing 
+ * ========================================================== */
+
+function saveStateToUrl() {
+  const { activeTags, activeCategories, mode } = timelineState.filters;
+  const params = new URLSearchParams({
+    tags: [...activeTags].join(','),
+    categories: [...activeCategories].join(','),
+    mode
+  });
+  window.location.hash = params.toString();
+}
+
+function loadStateFromUrl() {
+  const hash = window.location.hash.slice(1); // strip the #
+  if (!hash) return;
+
+  const params = new URLSearchParams(hash);
+  if (params.get('tags')) 
+    timelineState.filters.activeTags = new Set(params.get('tags').split(','));
+  if (params.get('categories'))
+    timelineState.filters.activeCategories = new Set(params.get('categories').split(','));
+  if (params.get('mode'))
+    timelineState.filters.mode = params.get('mode');
+}
+
+
+/* ============================================================
  * Data Load 
  * ========================================================== */
 
@@ -99,9 +127,15 @@ const timelineState = {
 };
 
 await initTagStore();
+loadStateFromUrl();
+
+// fetch all active tags
+for (const tag of timelineState.filters.activeTags) {
+  await loadTagToStore(tag);
+}
 
 // initial values
-await loadTagToStore(tagToStartWith);
+// await loadTagToStore(tagToStartWith);
 fitDataToFilters();
 
 const filtersUI = populateFilters(tagStore, timelineState.filters, {
@@ -136,6 +170,7 @@ function dataUpdatedRedraw() {
 }
 
 function fitDataToFilters() {
+    saveStateToUrl();
     console.log("Fitting data to filters...");
 
     const { activeCategories, activeTags, mode } = timelineState.filters;
