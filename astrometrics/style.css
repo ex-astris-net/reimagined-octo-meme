@@ -1,0 +1,8 @@
+body {
+    background-color: #012;
+}
+
+canvas#waveform {
+    border: 1px solid #369;
+    border-radius: 5px;
+}
