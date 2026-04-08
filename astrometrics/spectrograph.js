@@ -23,7 +23,7 @@ const SAMPLE_SYSTEM = {
     { id: '0', class: 'S', type: 'stellar', name: 'Senesky (major)', gravity: 3.1, orbital_radius: 0.1, notes: 'F9 V Yellow-White Main Sequence' },
     { id: '0a', class: 'S', type: 'stellar', name: 'Senesky (minor)', gravity: 18.3, orbital_radius: 0.36, notes: 'M7 V Red Dwarf' },
     { id: '0c', class: 'G', type: 'artificial', name: 'Dyson Sphere', gravity: 3.64, orbital_radius: 0.52, notes: '&nbsp;' },
-    { id: '0d', class: 'Y', type: 'biosign', name: 'Nova Strider', gravity: 3.64, orbital_radius: 0.52, notes: '&nbsp;' },
+    { id: '0d', class: 'C', type: 'biosign', name: 'Nova Strider', gravity: 3.64, orbital_radius: 0.52, notes: '&nbsp;' },
     { id: '0e', class: 'X', type: 'anomaly', name: 'Black Hole', gravity: 4.64, orbital_radius: 0.72, notes: '&nbsp;' },
     { id: 'I', class: 'H', type: 'body', name: 'Senesky-A', gravity: 1.64, orbital_radius: 1.11, notes: '&nbsp;' },
     { id: 'II', class: 'M', type: 'body', name: 'Senesky Prime', gravity: 1.11, orbital_radius: 1.44, notes: 'Thin, planetary rings' },
