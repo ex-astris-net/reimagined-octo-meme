@@ -5,16 +5,21 @@
 
 body {
     background-color: #012;
-    font-family: monospace;
+    font-family: "Lekton", monospace;
+    line-height: 1.15;
 }
 
 #app {
-    margin: 0 auto;
+    margin: 1em auto;
     width: 80%;
 }
 
 h1, h2 {
     color: #369;
+
+    font-family: "Share Tech Mono", monospace;
+    font-weight: normal;
+    text-transform: uppercase;
 }
 
 .panel {
@@ -37,7 +42,7 @@ div#contacts {
     color: #fff;
 
     height: 600px;
-    overflow-y: scroll;
+    overflow-y: auto;
 }
 
 div.contact-entry {
@@ -49,16 +54,20 @@ div.contact-entry {
 div.contact-meta {
     display: flex;
     align-items: baseline;
-    gap: 3em;
+    gap: 2em;
 }
 
 .contact-class, .contact-name {
-    font-size: 1.5em;
+    font-size: 1.25em;
+    font-weight: 700;
 }
 
 .contact-type {
-    padding: 0.15em 0.5em;
+    padding: 0.25em 0.5em;
     border-radius: 5px;
+    font-family: "Share Tech Mono", monospace;
+    font-size: 0.8em;
+    text-transform: uppercase;
 }
 
 .contact-detail {
