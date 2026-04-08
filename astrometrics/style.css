@@ -1,8 +1,71 @@
-body {
-    background-color: #012;
+* { 
+    margin: 0;
+    padding: 0;
 }
 
-canvas#waveform {
-    border: 1px solid #369;
+body {
+    background-color: #012;
+    font-family: monospace;
+}
+
+#app {
+    margin: 0 auto;
+    width: 80%;
+}
+
+h1, h2 {
+    color: #369;
+}
+
+.panel {
+    border: 1px solid #135;
     border-radius: 5px;
+    margin-bottom: 1em;
+}
+
+div#slider {
+    padding: 1em 0;
+}
+
+div#status {
+    padding: 1em;
+    color: #fff;
+}
+
+div#contacts {
+    padding: 1em;
+    color: #fff;
+
+    height: 300px;
+    overflow-y: scroll;
+}
+
+div.contact-entry {
+    display: grid;
+    grid-template-columns: 3em auto;
+    margin-top: 1em;
+}
+
+div.contact-meta {
+    display: flex;
+    align-items: baseline;
+    gap: 3em;
+}
+
+.contact-class, .contact-name {
+    font-size: 1.5em;
+}
+
+.contact-type {
+    padding: 0.15em 0.5em;
+    border-radius: 5px;
+}
+
+.contact-detail {
+    color: #aaa;
+}
+
+canvas {
+    display: block;
+    margin: 0 auto;
 }

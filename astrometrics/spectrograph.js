@@ -19,36 +19,43 @@ const CLASSES = {
 const SAMPLE_SYSTEM = {
   name: 'Senesky System',
   bodies: [
-    { id: 'I',   class: 'H', name: 'Senesky-A', mass: 0.3, orbital_radius: 1.11, notes: 'Sparse rocky debris. Low albedo.' },
-    { id: 'II',  class: 'M', name: 'Senesky Prime', mass: 1.0, orbital_radius: 1.44, notes: 'Nitrogen-oxygen atmosphere. Liquid water confirmed. Biosignatures present.' },
-    { id: 'III', class: 'D', name: 'Asteroid Belt', mass: 0.2, orbital_radius: 2.23, notes: 'Tidally locked. No atmosphere. Heavily cratered.' },
-    { id: 'IV', class: 'J', name: 'Senesky-C', mass: 3.7, orbital_radius: 3.84, notes: 'Thin atmosphere. Silicate composition. No liquid surface water.' },
-    { id: 'V',  class: 'J', name: 'Senesky-D', mass: 2.3, orbital_radius: 11.72, notes: 'Hydrogen-helium envelope. Strong magnetosphere. Banded cloud structure.' },
-    { id: 'VI',  class: 'D', name: 'Senesky-E', mass: 0.2, orbital_radius: 24.67, notes: 'Hydrogen-helium envelope. Strong magnetosphere. Banded cloud structure.' },
-    { id: 'VII',  class: 'P', name: 'Senesky-F', mass: 0.35, orbital_radius: 47.18, notes: 'Hydrogen-helium envelope. Strong magnetosphere. Banded cloud structure.' },
-    { id: 'VIII',  class: 'D', name: 'Senesky-G', mass: 2.3, orbital_radius: 99.09, notes: 'Hydrogen-helium envelope. Strong magnetosphere. Banded cloud structure.' },
-    { id: 'IX',  class: 'P', name: 'Asteroid Belt', mass: 0.13, orbital_radius: 197.77, notes: 'Hydrogen-helium envelope. Strong magnetosphere. Banded cloud structure.' },
-    { id: 'X',  class: 'P', name: 'Senesky-H', mass: 0.23, orbital_radius: 365.79, notes: 'Hydrogen-helium envelope. Strong magnetosphere. Banded cloud structure.' },
-    { id: 'XI',  class: 'P', name: 'Senesky-I', mass: 0.32, orbital_radius: 487.34, notes: 'Hydrogen-helium envelope. Strong magnetosphere. Banded cloud structure.' }
+    { id: 'I',   class: 'H', name: 'Senesky-A', gravity: 1.64, orbital_radius: 1.11, notes: '&nbsp;' },
+    { id: 'II',  class: 'M', name: 'Senesky Prime', gravity: 1.11, orbital_radius: 1.44, notes: 'Thin, planetary rings' },
+    { id: 'III', class: 'D', name: 'Asteroid Belt', gravity: 0.1, orbital_radius: 2.23, notes: '&nbsp;' },
+    { id: 'IV', class: 'J', name: 'Senesky-C', gravity: 7.01, orbital_radius: 3.84, notes: '31 moons' },
+    { id: 'V',  class: 'J', name: 'Senesky-D', gravity: 7.98, orbital_radius: 11.72, notes: 'Planetary rings, 28 moons' },
+    { id: 'VI',  class: 'D', name: 'Senesky-E', gravity: 1.10, orbital_radius: 24.67, notes: '&nbsp;' },
+    { id: 'VII',  class: 'P', name: 'Senesky-F', gravity: 0.98, orbital_radius: 47.18, notes: '&nbsp;' },
+    { id: 'VIII',  class: 'D', name: 'Senesky-G', gravity: 1.63, orbital_radius: 99.09, notes: 'Ice rings' },
+    { id: 'IX',  class: 'P', name: 'Asteroid Belt', gravity: 0.1, orbital_radius: 197.77, notes: '&nbsp;' },
+    { id: 'X',  class: 'P', name: 'Senesky-H', gravity: 1.29, orbital_radius: 365.79, notes: 'Ice rings' },
+    { id: 'XI',  class: 'P', name: 'Senesky-I', gravity: 0.99, orbital_radius: 487.34, notes: '&nbsp;' }
   ]
 };
 
 // -- GLOBAL VARIABLES  ────────────────────────────────────────────────────────── //
+
+const signalsList = document.getElementById('contacts');
+const statusEl = document.getElementById('status');
+
 const rainbowCanvas = document.getElementById("rainbow");
 const rCtx = rainbowCanvas.getContext('2d');
 const waveformCanvas = document.getElementById("waveform");
 const wCtx = waveformCanvas.getContext('2d');
 
 let system = SAMPLE_SYSTEM;
+let activeBodies = [];
+let activeContact = null;
+let revealed = new Set();
 
 let noiseTime = 0;
 let waveformAnim = null;
 let waveformCurrent = [];
-let baselineColor = '#ffffff';
+let baselineColor = CLASSES.G.color;
 
 
 // -- INTERACTIONS  ────────────────────────────────────────────────────────── //
-let rainbowNeedlePos = 0.1;
+let rainbowNeedlePos = 0.00;
 
 // rainbow spectrum
 let isDragging = false;
@@ -57,23 +64,44 @@ window.addEventListener('mouseup', () => isDragging = false);
 rainbowCanvas.addEventListener('mousemove', (e) => {
   if (!isDragging) return;
   rainbowNeedlePos = e.offsetX / rainbowCanvas.offsetWidth;
+
+  if (activeBodies.length > 0) {
+    const top = [...activeBodies].sort((a, b) => b.strength - a.strength)[0];
+    if (top.strength > 0.55) {
+      setStatus(`Class ${top.cls} band — <span class="blink">resolving...</span>`);
+      resolveTimer = setTimeout(() => {
+        for (const { body, cls, def } of activeBodies) 
+          revealContact(body, cls, def);
+
+        const names = activeBodies
+          .map(a => `<span style="color:${a.def.color}">${a.body.name}</span>`)
+          .join(', ');
+        setStatus(`Resolved — ${names}`);
+      }, 850);
+    } 
+    else {
+      setStatus(`Weak signal — Class ${top.cls} band`);
+    }
+  } 
+  else {
+    setStatus('No contact');
+  }
+
   requestAnimationFrame(drawLoop);
 });
 
-// touch controls because tablet fun lol
-rainbowCanvas.addEventListener('touchstart', () => isDragging = true);
-window.addEventListener('touchend', () => isDragging = false);
-rainbowCanvas.addEventListener('touchmove', (e) => {
-  if (!isDragging) return;
-  rainbowNeedlePos = e.touches[0] / rainbowCanvas.offsetWidth;
-  requestAnimationFrame(drawLoop);
-});
-
+// // touch controls because tablet fun lol
+// rainbowCanvas.addEventListener('touchstart', () => isDragging = true);
+// window.addEventListener('touchend', () => isDragging = false);
+// rainbowCanvas.addEventListener('touchmove', (e) => {
+//   if (!isDragging) return;
+//   rainbowNeedlePos = e.touches[0] / rainbowCanvas.offsetWidth;
+//   requestAnimationFrame(drawLoop);
+// });
 
 init();
 
-
-/** stuff  **/
+// -- CORE FUNCTIONS  ─────────────────────────────────────────────────────── //
 
 function init() {
   resizeCanvases();
@@ -89,20 +117,19 @@ function renderLoop() {
   noiseTime += 0.22;
   
   drawRainbow(rainbowNeedlePos);
+  updateWaveform();
   drawWaveform();
   requestAnimationFrame(renderLoop);
 }
 
 function drawLoop() {
-
   drawRainbow(rainbowNeedlePos);
   updateWaveform();
   drawWaveform();
-
 }
 
 function updateWaveform() {
-  const activeBodies = getActiveBodies(rainbowNeedlePos);
+  activeBodies = getActiveBodies(rainbowNeedlePos);
   const { def } = getNearestClass(rainbowNeedlePos);
   baselineColor = def.color;
   animateWaveform(buildWaveformTargets(activeBodies));
@@ -117,6 +144,45 @@ function resizeCanvases() {
     canvas.style.width  = parentW + 'px';
     canvas.style.height = h + 'px';
   }
+}
+
+function setStatus(html) { statusEl.innerHTML = html; }
+
+// ── Contacts ───────────────────────────────────────────────────────────────
+
+function revealContact(body, cls, def) {
+  const id = body.id;
+  if (revealed.has(id)) { activateContact(id); return; }
+  revealed.add(id);
+//  emptyMsg.style.display = 'none';
+ 
+  const entry = document.createElement('div');
+  entry.className = 'contact-entry';
+  entry.id = 'contact-' + id;
+  entry.innerHTML = `
+    <span class="contact-class" style="color:${def.color}">${cls}</span>
+    <div>
+      <div class="contact-meta">
+        <span class="contact-name">${body.name}</span>
+        <span class="contact-type" style="background-color:${def.color}80">${def.label}</span>
+      </div>
+      <div class="contact-detail">${body.notes || ''}</div>
+    </div>
+  `;
+  entry.addEventListener('click', () => activateContact(id));
+  contacts.appendChild(entry);
+  requestAnimationFrame(() => requestAnimationFrame(() => entry.classList.add('visible')));
+  activateContact(id);
+}
+ 
+function activateContact(id) {
+  if (activeContact) {
+    const prev = document.getElementById('contact-' + activeContact);
+    if (prev) prev.classList.remove('active');
+  }
+  activeContact = id;
+  const el = document.getElementById('contact-' + id);
+  if (el) el.classList.add('active');
 }
 
 // ── Rainbow bar ────────────────────────────────────────────────────────────
@@ -218,8 +284,8 @@ function buildWaveformTargets(activeBodies) {
   return activeBodies.map(({ body, cls, def, strength }) => ({
     id:    body.id,
     x:     bodyWaveX(body, system.bodies),
-    amp:   strength * (0.28 + Math.min(body.mass || 1.0, 3.0) * 0.20),
-    sigma: 0.038 + (body.mass || 1.0) * 0.010,
+    amp:   strength * (0.18 + Math.min(body.gravity || 1.0, 12.0) * 0.12),
+    sigma: 0.019 + (body.gravity || 1.0) * 0.004,
     color: def.color,
     body, cls, def,
   }));
