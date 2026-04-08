@@ -13,23 +13,26 @@ const CLASSES = {
   R: { label: 'Unstable',    color: '#0088AA', pos: 0.83 },
   J: { label: 'Gas Giant',   color: '#2244CC', pos: 0.90 },
   T: { label: 'Ultragiant',  color: '#6600CC', pos: 0.97 },
+  S: { label: 'Stellar',     color: '#ff00f2', pos: 0.999 },
 };
 
 // ── Sample system ──────────────────────────────────────────────────────────
 const SAMPLE_SYSTEM = {
   name: 'Senesky System',
   bodies: [
-    { id: 'I',   class: 'H', name: 'Senesky-A', gravity: 1.64, orbital_radius: 1.11, notes: '&nbsp;' },
-    { id: 'II',  class: 'M', name: 'Senesky Prime', gravity: 1.11, orbital_radius: 1.44, notes: 'Thin, planetary rings' },
-    { id: 'III', class: 'D', name: 'Asteroid Belt', gravity: 0.1, orbital_radius: 2.23, notes: '&nbsp;' },
-    { id: 'IV', class: 'J', name: 'Senesky-C', gravity: 7.01, orbital_radius: 3.84, notes: '31 moons' },
-    { id: 'V',  class: 'J', name: 'Senesky-D', gravity: 7.98, orbital_radius: 11.72, notes: 'Planetary rings, 28 moons' },
-    { id: 'VI',  class: 'D', name: 'Senesky-E', gravity: 1.10, orbital_radius: 24.67, notes: '&nbsp;' },
-    { id: 'VII',  class: 'P', name: 'Senesky-F', gravity: 0.98, orbital_radius: 47.18, notes: '&nbsp;' },
-    { id: 'VIII',  class: 'D', name: 'Senesky-G', gravity: 1.63, orbital_radius: 99.09, notes: 'Ice rings' },
-    { id: 'IX',  class: 'P', name: 'Asteroid Belt', gravity: 0.1, orbital_radius: 197.77, notes: '&nbsp;' },
-    { id: 'X',  class: 'P', name: 'Senesky-H', gravity: 1.29, orbital_radius: 365.79, notes: 'Ice rings' },
-    { id: 'XI',  class: 'P', name: 'Senesky-I', gravity: 0.99, orbital_radius: 487.34, notes: '&nbsp;' }
+    { id: '0', class: 'S', type: 'stellar', name: 'Senesky (major)', gravity: 5.64, orbital_radius: 0.1, notes: '&nbsp;' },
+    { id: '0a', class: 'S', type: 'stellar', name: 'Senesky (minor)', gravity: 3.64, orbital_radius: 0.36, notes: '&nbsp;' },
+    { id: 'I', class: 'H', type: 'body', name: 'Senesky-A', gravity: 1.64, orbital_radius: 1.11, notes: '&nbsp;' },
+    { id: 'II', class: 'M', type: 'body', name: 'Senesky Prime', gravity: 1.11, orbital_radius: 1.44, notes: 'Thin, planetary rings' },
+    { id: 'III', class: 'D', type: 'field', name: 'Asteroid Belt', gravity: 0.1, orbital_radius: 2.23, notes: '&nbsp;' },
+    { id: 'IV', class: 'J', type: 'body', name: 'Senesky-C', gravity: 7.01, orbital_radius: 3.84, notes: '31 moons' },
+    { id: 'V',  class: 'J', type: 'body', name: 'Senesky-D', gravity: 7.98, orbital_radius: 11.72, notes: 'Planetary rings, 28 moons' },
+    { id: 'VI',  class: 'D', type: 'body', name: 'Senesky-E', gravity: 1.10, orbital_radius: 24.67, notes: '&nbsp;' },
+    { id: 'VII',  class: 'P', type: 'body', name: 'Senesky-F', gravity: 0.98, orbital_radius: 47.18, notes: '&nbsp;' },
+    { id: 'VIII',  class: 'D', type: 'body', name: 'Senesky-G', gravity: 1.63, orbital_radius: 99.09, notes: 'Ice rings' },
+    { id: 'IX',  class: 'P', type: 'field', name: 'Asteroid Belt', gravity: 0.1, orbital_radius: 197.77, notes: '&nbsp;' },
+    { id: 'X',  class: 'P', type: 'body', name: 'Senesky-H', gravity: 1.29, orbital_radius: 365.79, notes: 'Ice rings' },
+    { id: 'XI',  class: 'P', type: 'body', name: 'Senesky-I', gravity: 0.99, orbital_radius: 487.34, notes: '&nbsp;' }
   ]
 };
 
@@ -170,7 +173,7 @@ function revealContact(body, cls, def) {
     </div>
   `;
   entry.addEventListener('click', () => activateContact(id));
-  contacts.appendChild(entry);
+  signalsList.appendChild(entry);
   requestAnimationFrame(() => requestAnimationFrame(() => entry.classList.add('visible')));
   activateContact(id);
 }
@@ -206,7 +209,8 @@ function drawRainbow(pos) {
   grad.addColorStop(0.76, '#00AAAA66');
   grad.addColorStop(0.83, '#0088AA66');
   grad.addColorStop(0.90, '#2244CC66');
-  grad.addColorStop(1.00, '#6600CC77');
+  grad.addColorStop(0.95, '#6600CC77');
+  grad.addColorStop(1.00, '#fe00fa77');
   rCtx.fillStyle = grad;
   rCtx.fillRect(0, 0, W, H);
  
@@ -255,14 +259,26 @@ function seededRandom(seed) {
   const x = Math.sin(seed * 9301.0 + 49297.0) * 233280.0;
   return x - Math.floor(x);
 }
- 
+
 function bodyWaveX(body, allBodies) {
-  const radii = allBodies.map(b => b.orbital_radius);
+  // filter out invalid radii
+  const valid = allBodies.filter(b => b.orbital_radius != null);
+
+  const radii = valid.map(b => b.orbital_radius);
   const minLog = Math.log(Math.min(...radii));
   const maxLog = Math.log(Math.max(...radii));
-  return 0.08 + ((Math.log(body.orbital_radius) - minLog) / (maxLog - minLog)) * 0.84;
+
+  // special case: no orbital radius (e.g. primary star)
+  if (body.orbital_radius == null) {
+    return 0.02; // anchor far left (or wherever you want stars)
+  }
+
+  return 0.08 + (
+    (Math.log(body.orbital_radius) - minLog) /
+    (maxLog - minLog)
+  ) * 0.84;
 }
- 
+
 function getActiveBodies(pos) {
   const result = [];
   for (const [cls, def] of Object.entries(CLASSES)) {
@@ -290,11 +306,43 @@ function buildWaveformTargets(activeBodies) {
     body, cls, def,
   }));
 }
- 
+
+function getSignalOffset(peak, px, cx, sigPx, ampPx) {
+  const type = peak.body.type || 'body';
+  const dx = px - cx;
+
+  if (type === 'stellar') {
+    const width = sigPx * 0.6; // narrow
+    const d = Math.abs(dx);
+
+    if (d > width) return 0;
+
+    const triangle = 1 - d / width;
+
+    return triangle * ampPx * 1.4;
+  }
+
+  // ── FIELD (distributed, grainy, non-peak) ──
+  if (type === 'field') {
+    const falloff = Math.exp(-Math.abs(dx) / (sigPx * 4.2)) ** 1.2;
+    const seed = peak.body.id.charCodeAt(0);
+    const drift = Math.sin(px * 0.123 + seed) * 0.21;
+
+    const waves =
+      (Math.sin((px - cx) * (0.35 + drift) + noiseTime * 1.2) +
+      Math.sin((px - cx) * (0.18 + drift * 0.5) + noiseTime * 0.8)) * 0.5 + 0.5;
+
+    return falloff * waves * ampPx * 0.7;
+  }
+
+  // ── DEFAULT (planets etc.) ──
+  return gaussian(px, cx, sigPx) * ampPx;
+}
+
 function gaussian(x, mu, sigma) {
   return Math.exp(-0.5 * Math.pow((x - mu) / sigma, 2));
 }
- 
+
 function drawWaveform() {
   const W = waveformCanvas.width;
   const H = waveformCanvas.height;
@@ -328,7 +376,7 @@ function drawWaveform() {
       const cx = peak.x * W;
       const sigPx = peak.sigma * W;
       const ampPx = peak.amp * baseline * 0.92;
-      offset += gaussian(px, cx, sigPx) * ampPx;
+      offset += getSignalOffset(peak, px, cx, sigPx, ampPx);
     }
     
     const y = baseline - offset + noise;
