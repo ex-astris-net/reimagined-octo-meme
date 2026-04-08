@@ -45,10 +45,15 @@ div#contacts {
     overflow-y: auto;
 }
 
+div#contacts h2 {
+    margin-bottom: 0.5em;
+}
+
 div.contact-entry {
     display: grid;
     grid-template-columns: 3em auto;
-    margin-top: 1em;
+    padding: 0.5em;
+    margin-bottom: 0.5em;
 }
 
 div.contact-meta {
@@ -72,6 +77,11 @@ div.contact-meta {
 
 .contact-detail {
     color: #aaa;
+}
+
+.band-active {
+    border-radius: 5px;
+    background-color: #33669920;
 }
 
 canvas {
