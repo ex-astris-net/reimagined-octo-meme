@@ -1,42 +1,20 @@
+
 // ── Class definitions ──────────────────────────────────────────────────────
 const CLASSES = {
   Y: { label: 'Demon',       color: '#8B0000', pos: 0.03 },
-  G: { label: 'Geoplastic',  color: '#AA1100', pos: 0.12 },
-  N: { label: 'Reducing',    color: '#CC3300', pos: 0.21 },
-  H: { label: 'Arid/Harsh',  color: '#DD5500', pos: 0.31 },
-  D: { label: 'Planetoid',   color: '#CC8800', pos: 0.40 },
-  K: { label: 'Adaptable',   color: '#BBAA00', pos: 0.48 },
-  L: { label: 'Marginal',    color: '#66BB00', pos: 0.53 },
-  M: { label: 'Terrestrial', color: '#00AA44', pos: 0.57 },
-  O: { label: 'Pelagic',     color: '#00AA88', pos: 0.62 },
-  P: { label: 'Glaciated',   color: '#0099BB', pos: 0.67 },
-  C: { label: 'Organic',     color: '#0088BB', pos: 0.72 },
-  J: { label: 'Gas Giant',   color: '#2233CC', pos: 0.81 },
-  T: { label: 'Ultragiant',  color: '#5500CC', pos: 0.91 },
-  S: { label: 'Stellar',     color: '#ff00f2', pos: 0.98 },
-};
-
-// ── Sample system ──────────────────────────────────────────────────────────
-const SAMPLE_SYSTEM = {
-  name: 'Senesky System',
-  bodies: [
-    { id: '0', class: 'S', type: 'stellar', name: 'Senesky (major)', gravity: 3.1, orbital_radius: 0.1, notes: 'F9 V Yellow-White Main Sequence' },
-    { id: '0a', class: 'S', type: 'stellar', name: 'Senesky (minor)', gravity: 18.3, orbital_radius: 0.36, notes: 'M7 V Red Dwarf' },
-    { id: '0c', class: 'G', type: 'artificial', name: 'Dyson Sphere', gravity: 3.64, orbital_radius: 0.52, notes: '&nbsp;' },
-    { id: '0d', class: 'C', type: 'biosign', name: 'Nova Strider', gravity: 3.64, orbital_radius: 0.52, notes: '&nbsp;' },
-    { id: '0e', class: 'X', type: 'anomaly', name: 'Black Hole', gravity: 4.64, orbital_radius: 0.72, notes: '&nbsp;' },
-    { id: 'I', class: 'H', type: 'body', name: 'Senesky-A', gravity: 1.64, orbital_radius: 1.11, notes: '&nbsp;' },
-    { id: 'II', class: 'M', type: 'body', name: 'Senesky Prime', gravity: 1.11, orbital_radius: 1.44, notes: 'Thin, planetary rings' },
-    { id: 'III', class: 'D', type: 'field', name: 'Asteroid Belt', gravity: 0.1, orbital_radius: 2.23, notes: '&nbsp;' },
-    { id: 'IV', class: 'J', type: 'body', name: 'Senesky-C', gravity: 7.01, orbital_radius: 3.84, notes: '31 moons' },
-    { id: 'V', class: 'J', type: 'body', name: 'Senesky-D', gravity: 7.98, orbital_radius: 11.72, notes: 'Planetary rings, 28 moons' },
-    { id: 'VI', class: 'D', type: 'body', name: 'Senesky-E', gravity: 1.10, orbital_radius: 24.67, notes: '&nbsp;' },
-    { id: 'VII', class: 'P', type: 'body', name: 'Senesky-F', gravity: 0.98, orbital_radius: 47.18, notes: '&nbsp;' },
-    { id: 'VIII', class: 'D', type: 'body', name: 'Senesky-G', gravity: 1.63, orbital_radius: 99.09, notes: 'Ice rings' },
-    { id: 'IX', class: 'P', type: 'field', name: 'Asteroid Belt', gravity: 0.1, orbital_radius: 197.77, notes: '&nbsp;' },
-    { id: 'X', class: 'P', type: 'body', name: 'Senesky-H', gravity: 1.29, orbital_radius: 365.79, notes: 'Ice rings' },
-    { id: 'XI', class: 'P', type: 'body', name: 'Senesky-I', gravity: 0.99, orbital_radius: 487.34, notes: '&nbsp;' }
-  ]
+  G: { label: 'Geoplastic',  color: '#AA1100', pos: 0.10 },
+  N: { label: 'Reducing',    color: '#CC3300', pos: 0.18 },
+  H: { label: 'Arid/Harsh',  color: '#DD5500', pos: 0.26 },
+  D: { label: 'Planetoid',   color: '#CC8800', pos: 0.33 },
+  C: { label: 'Organic',     color: '#BBAA00', pos: 0.42 },
+  K: { label: 'Adaptable',   color: '#88AA00', pos: 0.49 },
+  L: { label: 'Marginal',    color: '#44BB00', pos: 0.55 },
+  M: { label: 'Terrestrial', color: '#00AA44', pos: 0.60 },
+  O: { label: 'Pelagic',     color: '#00AAAA', pos: 0.65 },
+  P: { label: 'Ice Giant',   color: '#0088BB', pos: 0.71 },
+  J: { label: 'Gas Giant',   color: '#2233CC', pos: 0.79 },
+  T: { label: 'Substellar',  color: '#5500CC', pos: 0.88 },
+  S: { label: 'Stellar',     color: '#ff00ff', pos: 0.98 },
 };
 
 // -- GLOBAL VARIABLES  ────────────────────────────────────────────────────────── //
@@ -49,7 +27,38 @@ const rCtx = rainbowCanvas.getContext('2d');
 const waveformCanvas = document.getElementById("waveform");
 const wCtx = waveformCanvas.getContext('2d');
 
-let system = SAMPLE_SYSTEM;
+// get sheet name, use sample if none included
+const params = new URLSearchParams(window.location.search);
+const systemSheetName = params.get("system");
+
+// fetch sheet data here
+const system = fetchSheetData(systemSheetName).then(data => {
+
+  if (data.length > 0) {
+    system.name = systemSheetName;
+    system.bodies = data.map((item, i) => ({
+      id: String(i),
+      class: item.Class, 
+      type: item.Type, 
+      name: item.Name,
+      orbital_radius: item['Orbital Radius'],
+      mass: item.Mass,
+      notes: item.Notes
+    }));
+
+    console.log("LOADED SYSTEM:", system);
+    setStatus(`Scanning ${systemSheetName}...`);
+  }
+  else {
+    system.bodies = [];
+    setStatus(`No system found.`);
+  }
+
+  init();
+  
+});
+
+
 let activeBodies = [];
 let activeContact = null;
 let revealed = new Set();
@@ -76,7 +85,7 @@ rainbowCanvas.addEventListener('mousemove', (e) => {
     if (top.strength > 0.55) {
       setStatus(`Class ${top.cls} band — <span class="blink">resolving...</span>`);
       resolveTimer = setTimeout(() => {
-        for (const { body, cls, def } of activeBodies) 
+        for (const { body, cls, def } of activeBodies)
           revealContact(body, cls, def);
 
         const names = activeBodies
@@ -84,11 +93,11 @@ rainbowCanvas.addEventListener('mousemove', (e) => {
           .join(', ');
         setStatus(`Resolved — ${names}`);
       }, 850);
-    } 
+    }
     else {
       setStatus(`Weak signal — Class ${top.cls} band`);
     }
-  } 
+  }
   else {
     setStatus('No contact');
   }
@@ -105,23 +114,20 @@ rainbowCanvas.addEventListener('mousemove', (e) => {
 //   requestAnimationFrame(drawLoop);
 // });
 
-init();
-
 // -- CORE FUNCTIONS  ─────────────────────────────────────────────────────── //
 
 function init() {
   resizeCanvases();
-  renderLoop(); // add this
+  renderLoop();
 
   window.addEventListener('resize', () => {
     resizeCanvases();
   });
-
 }
 
 function renderLoop() {
   noiseTime += 0.22;
-  
+
   drawRainbow(rainbowNeedlePos);
   updateWaveform();
   drawWaveform();
@@ -161,8 +167,7 @@ function revealContact(body, cls, def) {
   const id = body.id;
   if (revealed.has(id)) { activateContact(id); return; }
   revealed.add(id);
-//  emptyMsg.style.display = 'none';
- 
+
   const entry = document.createElement('div');
   entry.className = 'contact-entry';
   entry.id = 'contact-' + id;
@@ -173,7 +178,8 @@ function revealContact(body, cls, def) {
         <span class="contact-name">${body.name}</span>
         <span class="contact-type" style="background-color:${def.color}80">${def.label}</span>
         ${body.gravity ? `<span>Gravity: ${body.gravity}</span>` : ''}
-        ${body.orbital_radius ? `<span>Orbital Radius: ${body.orbital_radius}</span>` : ''}
+        ${body.mass ? `<span>Mass: ${body.mass} ${(body.class === 'S' || body.class === 'T') ? 'Mo' : 'Me'}</span>` : ''}
+        ${body.orbital_radius ? `<span>Orbital Radius: ${body.orbital_radius} AU</span>` : ''}
       </div>
       <div class="contact-detail">
         ${body.notes || ''}
@@ -186,7 +192,7 @@ function revealContact(body, cls, def) {
   activateContact(id);
   sortContacts();
 }
- 
+
 function activateContact(id) {
   if (activeContact) {
     const prev = document.getElementById('contact-' + activeContact);
@@ -198,9 +204,7 @@ function activateContact(id) {
 }
 
 function highlightActiveBand(activeBodies) {
-  // clear all
   document.querySelectorAll('.contact-entry').forEach(el => el.classList.remove('band-active'));
-  // highlight current band members
   for (const { body } of activeBodies) {
     const el = document.getElementById('contact-' + body.id);
     if (el) el.classList.add('band-active');
@@ -225,31 +229,31 @@ function drawRainbow(pos) {
   const H = rainbowCanvas.height;
   const dpr = window.devicePixelRatio || 1;
   rCtx.clearRect(0, 0, W, H);
- 
+
   // Gradient
   const grad = rCtx.createLinearGradient(0, 0, W, 0);
   grad.addColorStop(0.03, '#8B000077');
-  grad.addColorStop(0.12, '#AA110066');
-  grad.addColorStop(0.21, '#CC330066');
-  grad.addColorStop(0.31, '#DD550066');
-  grad.addColorStop(0.40, '#CC880066');
-  grad.addColorStop(0.48, '#BBAA0066');
-  grad.addColorStop(0.53, '#66BB0066');
-  grad.addColorStop(0.57, '#00AA4477');
-  grad.addColorStop(0.62, '#00AA8866');
-  grad.addColorStop(0.67, '#0099BB66');
-  grad.addColorStop(0.72, '#0088BB66');
-  grad.addColorStop(0.81, '#2233CC66');
-  grad.addColorStop(0.91, '#5500CC77');
+  grad.addColorStop(0.10, '#AA110066');
+  grad.addColorStop(0.18, '#CC330066');
+  grad.addColorStop(0.26, '#DD550066');
+  grad.addColorStop(0.33, '#CC880066');
+  grad.addColorStop(0.42, '#BBAA0066');
+  grad.addColorStop(0.49, '#66BB0066');
+  grad.addColorStop(0.55, '#00AA4477');
+  grad.addColorStop(0.60, '#00AA8866');
+  grad.addColorStop(0.65, '#0099BB66');
+  grad.addColorStop(0.71, '#0088BB66');
+  grad.addColorStop(0.79, '#2233CC66');
+  grad.addColorStop(0.88, '#5500CC77');
   grad.addColorStop(0.98, '#ff00f277');
   rCtx.fillStyle = grad;
   rCtx.fillRect(0, 0, W, H);
- 
+
   // Border
   rCtx.strokeStyle = 'rgba(255,255,255,0.08)';
   rCtx.lineWidth = 1;
   rCtx.strokeRect(0, 0, W, H);
- 
+
   // Class ticks and labels
   for (const [cls, def] of Object.entries(CLASSES)) {
     const x = def.pos * W;
@@ -264,7 +268,7 @@ function drawRainbow(pos) {
     rCtx.textAlign = 'center';
     rCtx.fillText(cls, x, H * 0.38);
   }
- 
+
   // Needle
   const needleX = pos * W;
   rCtx.strokeStyle = 'rgba(200,216,232,0.95)';
@@ -273,7 +277,7 @@ function drawRainbow(pos) {
   rCtx.moveTo(needleX, 0);
   rCtx.lineTo(needleX, H);
   rCtx.stroke();
- 
+
   // Needle bottom triangle
   rCtx.fillStyle = 'rgba(200,216,232,0.95)';
   rCtx.beginPath();
@@ -292,17 +296,12 @@ function seededRandom(seed) {
 }
 
 function bodyWaveX(body, allBodies) {
-  // filter out invalid radii
   const valid = allBodies.filter(b => b.orbital_radius != null);
-
   const radii = valid.map(b => b.orbital_radius);
   const minLog = Math.log(Math.min(...radii));
   const maxLog = Math.log(Math.max(...radii));
 
-  // special case: no orbital radius (e.g. primary star)
-  if (body.orbital_radius == null) {
-    return 0.02; // anchor far left (or wherever you want stars)
-  }
+  if (body.orbital_radius == null) return 0.02;
 
   return 0.08 + (
     (Math.log(body.orbital_radius) - minLog) /
@@ -318,7 +317,7 @@ function getActiveBodies(pos) {
     if (dist < bandwidth) {
       const strength = Math.max(0, 1 - dist / bandwidth);
       for (const body of system.bodies) {
-        if (body.type === 'anomaly') continue; // ← add this
+        if (body.type === 'anomaly') continue;
         if (body.class === cls) {
           result.push({ body, cls, def, strength });
         }
@@ -327,22 +326,32 @@ function getActiveBodies(pos) {
   }
   return result;
 }
- 
+
+// ── Mass → amplitude ───────────────────────────────────────────────────────
+// S and T-class bodies use M☉; all other classes use M⊕.
+// Both scales are log-normalised so the curve shape is consistent,
+// but the reference maxima differ to keep stellar objects from
+// overwhelming the waveform relative to planetary ones.
+function massToAmp(body) {
+  const isStellar = body.class === 'S' || body.class === 'T';
+  
+  // Fields are distributed mass — use a fixed internal value for signal strength
+  const mass = body.type === 'field' ? 0.05 : (body.mass ?? 1.0);
+
+  const maxMass = isStellar ? 100 : 300;
+  const normalized = Math.log1p(mass) / Math.log1p(maxMass);
+  return Math.pow(Math.min(normalized, 1), 0.2);
+}
+
 function buildWaveformTargets(activeBodies) {
   return activeBodies.map(({ body, cls, def, strength }) => ({
     id:    body.id,
     x:     bodyWaveX(body, system.bodies),
-    amp:   strength * (0.18 + gravityToAmp(body.gravity) * 0.6),
-    sigma: 0.019 + gravityToAmp(body.gravity) * 0.025,
+    amp:   strength * (0.18 + massToAmp(body) * 0.6),
+    sigma: 0.019 + massToAmp(body) * 0.025,
     color: def.color,
     body, cls, def,
   }));
-}
-
-function gravityToAmp(gravity) {
-  const g = Math.min(gravity || 1.0, 50000);
-  const normalized = Math.log1p(g) / Math.log1p(50000);
-  return Math.pow(normalized, 0.2); // power < 1 lifts the low end
 }
 
 function getSignalOffset(peak, px, cx, sigPx, ampPx) {
@@ -352,7 +361,7 @@ function getSignalOffset(peak, px, cx, sigPx, ampPx) {
   if (type === 'field')      return field(peak, px, cx, sigPx, ampPx, px - cx);
   if (type === 'artificial') return artificial(px, cx, sigPx, ampPx);
   if (type === 'biosign')    return biosign(peak, px, cx, sigPx, ampPx);
-  if (type === 'anomaly') return anomaly(px, cx, sigPx, ampPx);
+  if (type === 'anomaly')    return anomaly(px, cx, sigPx, ampPx);
 
   return gaussian(px, cx, sigPx) * ampPx;
 }
@@ -362,14 +371,10 @@ function gaussian(x, mu, sigma) {
 }
 
 function stellar(sigPx, dx, ampPx) {
-  const width = sigPx * 0.6; // narrow
+  const width = sigPx * 0.6;
   const d = Math.abs(dx);
-
   if (d > width) return 0;
-
-  const triangle = 1 - d / width;
-
-  return triangle * ampPx * 1.4;
+  return (1 - d / width) * ampPx * 1.4;
 }
 
 function field(peak, px, cx, sigPx, ampPx, dx) {
@@ -379,7 +384,7 @@ function field(peak, px, cx, sigPx, ampPx, dx) {
 
   const waves =
     (Math.sin((px - cx) * (0.35 + drift) + noiseTime * 1.2) +
-    Math.sin((px - cx) * (0.18 + drift * 0.5) + noiseTime * 0.8)) * 0.5 + 0.5;
+     Math.sin((px - cx) * (0.18 + drift * 0.5) + noiseTime * 0.8)) * 0.5 + 0.5;
 
   return falloff * waves * ampPx * 0.7;
 }
@@ -388,18 +393,15 @@ function artificial(px, cx, sigPx, ampPx) {
   const g = gaussian(px, cx, sigPx * 1.2);
   if (g < 0.01) return 0;
 
-  // Square wave — quantize into discrete steps
-  const freq = 0.045; // width of each square pulse in px-space
-  const steps = 5;    // number of amplitude levels
+  const freq = 0.045;
+  const steps = 5;
   const wave = Math.sign(Math.sin((px - cx) * freq * Math.PI));
   const quantized = Math.round(g * steps) / steps;
 
-  // Combine — envelope shape but with hard-stepped amplitude
   return quantized * ((wave + 1) / 2) * ampPx * 1.1;
 }
 
 function biosign(peak, px, cx, sigPx, ampPx) {
-  // Sine envelope instead of gaussian
   const width = sigPx * 3.1;
   const dx = px - cx;
   if (Math.abs(dx) > width) return 0;
@@ -420,7 +422,6 @@ function biosign(peak, px, cx, sigPx, ampPx) {
   }
 
   const breathe = 0.85 + 0.15 * Math.sin(noiseTime * 0.4);
-
   return envelope * Math.max(0, beat) * breathe * ampPx * 1.4;
 }
 
@@ -435,10 +436,10 @@ function drawWaveform() {
   const H = waveformCanvas.height;
   const dpr = window.devicePixelRatio || 1;
   wCtx.clearRect(0, 0, W, H);
- 
+
   const baseline = H * 0.82;
   const noiseAmp = H * 0.010;
- 
+
   // Subtle grid
   wCtx.strokeStyle = 'rgba(255,255,255,0.03)';
   wCtx.lineWidth = 1;
@@ -449,8 +450,7 @@ function drawWaveform() {
     wCtx.lineTo(W, y);
     wCtx.stroke();
   }
-  
-  // collect anomaly bodies once
+
   const anomalies = system.bodies.filter(b => b.type === 'anomaly');
 
   wCtx.strokeStyle = baselineColor;
@@ -458,14 +458,17 @@ function drawWaveform() {
   wCtx.beginPath();
 
   for (let px = 0; px < W; px++) {
-    const noise = (Math.sin(px * 0.71 + noiseTime + 2.3) + Math.sin(px * 1.57 + noiseTime * 0.7 + 0.9) + Math.sin(px * 0.31 + noiseTime * 1.3 + 4.1)) * noiseAmp * 0.6;
+    const noise = (
+      Math.sin(px * 0.71  + noiseTime + 2.3) +
+      Math.sin(px * 1.57  + noiseTime * 0.7 + 0.9) +
+      Math.sin(px * 0.31  + noiseTime * 1.3 + 4.1)
+    ) * noiseAmp * 0.6;
 
     let offset = 0;
 
-    // normal peaks
     for (const peak of waveformCurrent) {
       if (peak.amp < 0.005) continue;
-      const cx = peak.x * W;
+      const cx    = peak.x * W;
       const sigPx = peak.sigma * W;
       const ampPx = peak.amp * baseline * 0.92;
       offset += getSignalOffset(peak, px, cx, sigPx, ampPx);
@@ -473,10 +476,10 @@ function drawWaveform() {
 
     // anomaly interference — always present, full width
     for (const body of anomalies) {
-      const cx = bodyWaveX(body, system.bodies) * W;
-      const sigPx = (0.019 + (body.gravity || 1.0) * 0.004) * W;
-      const ampPx = (0.18 + Math.min(body.gravity || 1.0, 12.0) * 0.12) * baseline * 0.92;
-      const peak = { body, cls: body.class, def: CLASSES[body.class] || CLASSES.Y };
+      const cx    = bodyWaveX(body, system.bodies) * W;
+      const sigPx = (0.019 + massToAmp(body) * 0.025) * W;
+      const ampPx = (0.18  + massToAmp(body) * 0.6)   * baseline * 0.92;
+      const peak  = { body, cls: body.class, def: CLASSES[body.class] || CLASSES.Y };
       offset += getSignalOffset(peak, px, cx, sigPx, ampPx);
     }
 
@@ -489,12 +492,12 @@ function drawWaveform() {
 // ── Waveform animation ─────────────────────────────────────────────────────
 function animateWaveform(targets) {
   cancelAnimationFrame(waveformAnim);
- 
+
   const allIds = new Set([
     ...waveformCurrent.map(p => p.id),
     ...targets.map(p => p.id),
   ]);
- 
+
   const next = [];
   for (const id of allIds) {
     const cur = waveformCurrent.find(p => p.id === id);
@@ -506,7 +509,7 @@ function animateWaveform(targets) {
     }
   }
   waveformCurrent = next;
- 
+
   function step() {
     let animating = false;
     for (const peak of waveformCurrent) {
