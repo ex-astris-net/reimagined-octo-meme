@@ -32,19 +32,28 @@ const params = new URLSearchParams(window.location.search);
 const systemSheetName = params.get("system");
 
 // fetch sheet data here
+const KNOWN_COLUMNS = new Set(['Class', 'Type', 'Name', 'Orbital Radius', 'Mass', 'Notes']);
 const system = fetchSheetData(systemSheetName).then(data => {
 
   if (data.length > 0) {
     system.name = systemSheetName;
-    system.bodies = data.map((item, i) => ({
-      id: String(i),
-      class: item.Class, 
-      type: item.Type, 
-      name: item.Name,
-      orbital_radius: item['Orbital Radius'],
-      mass: item.Mass,
-      notes: item.Notes
-    }));
+    system.bodies = data.map((item, i) => {
+      const extras = {};
+      for (const key of Object.keys(item)) {
+        if (!KNOWN_COLUMNS.has(key)) extras[key] = item[key];
+      }
+
+      return {
+        id: String(i),
+        class: item.Class,
+        type: item.Type,
+        name: item.Name,
+        orbital_radius: item['Orbital Radius'],
+        mass: item.Mass,
+        notes: item.Notes,
+        ...(Object.keys(extras).length > 0 ? { extras } : {}),
+      };
+    });
 
     console.log("LOADED SYSTEM:", system);
     setStatus(`Scanning ${systemSheetName}...`);
@@ -55,7 +64,6 @@ const system = fetchSheetData(systemSheetName).then(data => {
   }
 
   init();
-  
 });
 
 
@@ -180,6 +188,12 @@ function revealContact(body, cls, def) {
         ${body.gravity ? `<span>Gravity: ${body.gravity}</span>` : ''}
         ${body.mass ? `<span>Mass: ${body.mass} ${(body.class === 'S' || body.class === 'T') ? 'Mo' : 'Me'}</span>` : ''}
         ${body.orbital_radius ? `<span>Orbital Radius: ${body.orbital_radius} AU</span>` : ''}
+      </div>
+      <div class="contact-extras">
+        ${body.extras ? Object.entries(body.extras)
+          .filter(([k, v]) => v != null && v !== '')
+          .map(([k, v]) => `<span>${k}: ${v}</span>`)
+          .join('') : ''}
       </div>
       <div class="contact-detail">
         ${body.notes || ''}
