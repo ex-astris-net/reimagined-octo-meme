@@ -392,15 +392,22 @@ function stellar(sigPx, dx, ampPx) {
 }
 
 function field(peak, px, cx, sigPx, ampPx, dx) {
-  const falloff = Math.exp(-Math.abs(dx) / (sigPx * 4.2)) ** 1.2;
+  const falloff = Math.exp(-Math.abs(dx) / (sigPx * 5.5)) ** 1.75;
+  if (falloff < 0.01) return 0;
+
   const seed = peak.body.id.charCodeAt(0);
-  const drift = Math.sin(px * 0.123 + seed) * 0.21;
 
-  const waves =
-    (Math.sin((px - cx) * (0.35 + drift) + noiseTime * 1.2) +
-     Math.sin((px - cx) * (0.18 + drift * 0.5) + noiseTime * 0.8)) * 0.5 + 0.5;
+  const wave =
+    Math.sin((px - cx) * 0.22 + seed + noiseTime * 0.7) * 0.50 +
+    Math.sin((px - cx) * 0.37 + seed * 1.3 + noiseTime * 0.45) * 0.35 +
+    Math.sin((px - cx) * 0.61 + seed * 0.7 + noiseTime * 0.31) * 0.25 +
+    Math.sin((px - cx) * 0.13 + seed * 2.1 + noiseTime * 0.19) * 0.20 +
+    Math.sin((px - cx) * 0.47 + seed * 1.7 + noiseTime * 0.13) * 0.15 +
+    Math.sin((px - cx) * 0.09 + seed * 0.4 + noiseTime * 0.09) * 0.15;
 
-  return falloff * waves * ampPx * 0.7;
+  const normalized = (wave / 1.6 + 1) * 0.7;
+
+  return falloff * normalized * ampPx * 0.85;
 }
 
 function artificial(px, cx, sigPx, ampPx) {
