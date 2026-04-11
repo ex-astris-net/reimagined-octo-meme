@@ -56,7 +56,7 @@ div.contact-entry {
     margin-bottom: 0.5em;
 }
 
-div.contact-meta {
+div.contact-meta, div.contact-extras {
     display: flex;
     align-items: baseline;
     gap: 2em;
