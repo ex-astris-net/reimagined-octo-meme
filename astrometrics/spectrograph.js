@@ -32,7 +32,7 @@ const params = new URLSearchParams(window.location.search);
 const systemSheetName = params.get("system");
 
 // fetch sheet data here
-const KNOWN_COLUMNS = new Set(['Class', 'Type', 'Name', 'Orbital Radius', 'Mass', 'Notes']);
+const KNOWN_COLUMNS = new Set(['Class', 'Type', 'Name', 'Orbit', 'Mass', 'Notes']);
 const system = fetchSheetData(systemSheetName).then(data => {
 
   if (data.length > 0) {
@@ -48,7 +48,7 @@ const system = fetchSheetData(systemSheetName).then(data => {
         class: item.Class,
         type: item.Type,
         name: item.Name,
-        orbital_radius: item['Orbital Radius'],
+        orbit: item['Orbit'],
         mass: item.Mass,
         notes: item.Notes,
         ...(Object.keys(extras).length > 0 ? { extras } : {}),
@@ -180,24 +180,31 @@ function revealContact(body, cls, def) {
   entry.className = 'contact-entry';
   entry.id = 'contact-' + id;
   entry.innerHTML = `
-    <span class="contact-class" style="color:${def.color}">${cls}</span>
-    <div>
-      <div class="contact-meta">
+    <div class="contact-meta">
+      <span class="contact-class" style="color:${def.color}">${cls}</span>
+      <div class="contact-basic">
         <span class="contact-name">${body.name}</span>
         <span class="contact-type" style="background-color:${def.color}80">${def.label}</span>
-        ${body.gravity ? `<span>Gravity: ${body.gravity}</span>` : ''}
-        ${body.mass ? `<span>Mass: ${body.mass} ${(body.class === 'S' || body.class === 'T') ? 'Mo' : 'Me'}</span>` : ''}
-        ${body.orbital_radius ? `<span>Orbital Radius: ${body.orbital_radius} AU</span>` : ''}
       </div>
-      <div class="contact-extras">
-        ${body.extras ? Object.entries(body.extras)
-          .filter(([k, v]) => v != null && v !== '')
-          .map(([k, v]) => `<span>${k}: ${v}</span>`)
-          .join('') : ''}
-      </div>
-      <div class="contact-detail">
-        ${body.notes || ''}
-      </div>
+      <span class="contact-metric">
+        ${body.mass ? `<span class="metric-label">Mass</span>
+          <span>${body.mass} ${(body.class === 'S' || body.class === 'T') ? 'Mo' : 'Me'}</span>` : ''}
+      </span>
+      <span class="contact-metric">
+        ${body.orbit ? `<span class="metric-label">Orbit</span>
+          <span>${body.orbit} AU</span>` : ''}
+      </span>
+    </div>
+    <div class="contact-notes contact-expanded">
+      <span class="metric-label">NOTES</span> <span>${body.notes || ''}</span>
+    </div>
+    <div class="contact-extras contact-expanded">
+      ${body.extras ? Object.entries(body.extras)
+        .filter(([k, v]) => v != null && v !== '')
+        .map(([k, v]) => `<span class="contact-metric"><span class="metric-label">${k}</span><span>${v}</span></span>`)
+        .join('') : ''}
+    </div>
+
     </div>
   `;
   entry.addEventListener('click', () => activateContact(id));
@@ -232,7 +239,7 @@ function sortContacts() {
     const bId = b.id.replace('contact-', '');
     const aBody = system.bodies.find(b => b.id === aId);
     const bBody = system.bodies.find(b => b.id === bId);
-    return (aBody?.orbital_radius || 0) - (bBody?.orbital_radius || 0);
+    return (aBody?.orbit || 0) - (bBody?.orbit || 0);
   });
   entries.forEach(el => signalsList.appendChild(el));
 }
@@ -310,15 +317,15 @@ function seededRandom(seed) {
 }
 
 function bodyWaveX(body, allBodies) {
-  const valid = allBodies.filter(b => b.orbital_radius != null);
-  const radii = valid.map(b => b.orbital_radius);
+  const valid = allBodies.filter(b => b.orbit != null);
+  const radii = valid.map(b => b.orbit);
   const minLog = Math.log(Math.min(...radii));
   const maxLog = Math.log(Math.max(...radii));
 
-  if (body.orbital_radius == null) return 0.02;
+  if (body.orbit == null) return 0.02;
 
   return 0.08 + (
-    (Math.log(body.orbital_radius) - minLog) /
+    (Math.log(body.orbit) - minLog) /
     (maxLog - minLog)
   ) * 0.84;
 }

@@ -49,22 +49,54 @@ div#contacts h2 {
     margin-bottom: 0.5em;
 }
 
-div.contact-entry {
-    display: grid;
-    grid-template-columns: 3em auto;
-    padding: 0.5em;
-    margin-bottom: 0.5em;
+div.contact-entry, 
+div.contact-meta, 
+div.contact-basic, 
+span.contact-metric,
+div.contact-extras {
+    display: flex;
 }
 
-div.contact-meta, div.contact-extras {
-    display: flex;
-    align-items: baseline;
+span.contact-metric {
+    gap: 0;
+}
+
+div.contact-entry {
+    flex-direction: column;
+    margin-bottom: 1em;
+    border-radius: 5px;
+}
+
+div.contact-meta, 
+div.contact-notes, 
+div.contact-extras {
+    padding: 1em 1em 0.5em 1em;
     gap: 2em;
+}
+
+span.contact-metric {
+    flex-direction: column;
+}
+
+span.metric-label {
+    text-transform: uppercase;
+    font-family: "Share Tech Mono", monospace;
+    font-size: 0.8em;
+    color: #aaa;
 }
 
 .contact-class, .contact-name {
     font-size: 1.25em;
     font-weight: 700;
+}
+
+.contact-name {
+    padding-right: 2em;
+}
+
+div.contact-basic { 
+    align-items: baseline;
+    flex-grow: 2; 
 }
 
 .contact-type {
@@ -75,13 +107,25 @@ div.contact-meta, div.contact-extras {
     text-transform: uppercase;
 }
 
-.contact-detail {
-    color: #aaa;
+.contact-notes {
+    border-top: 1px solid #123;
+}
+
+.contact-extras {
+    gap: 1em;
+    border-top: 1px solid #123;
 }
 
 .band-active {
-    border-radius: 5px;
+    border: 1px solid #135;
+    border-radius: 15px;
     background-color: #33669920;
+}
+
+div.contact-expanded { display: none; }
+
+.band-active div.contact-expanded {
+    display: flex;
 }
 
 canvas {
