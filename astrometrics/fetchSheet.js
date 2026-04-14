@@ -1,13 +1,17 @@
 const SHEET_ID = "1YeUQWYYg7HKlYdWC1Q7Hmsyp1IQzXYaW7ibCN_zcvSc";
 
 async function fetchSheetData(SHEET_NAME) {
+    console.log("Fetching", SHEET_NAME);
     const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?sheet=${SHEET_NAME}`;
+
+    console.log(url);
 
     const res = await fetch(url);
     const text = await res.text();
 
     // Google wraps JSON in a weird function, so we clean it:
     const json = JSON.parse(text.substring(47).slice(0, -2));
+    console.log(json);
 
     const rows = json.table.rows;
 

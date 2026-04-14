@@ -1,19 +1,20 @@
 
 // ── Class definitions ──────────────────────────────────────────────────────
 const CLASSES = {
-  Y: { label: 'Demon',       color: '#8B0000', pos: 0.03 },
-  G: { label: 'Geoplastic',  color: '#AA1100', pos: 0.10 },
-  N: { label: 'Reducing',    color: '#CC3300', pos: 0.18 },
-  H: { label: 'Arid/Harsh',  color: '#DD5500', pos: 0.26 },
-  D: { label: 'Planetoid',   color: '#CC8800', pos: 0.33 },
-  C: { label: 'Organic',     color: '#BBAA00', pos: 0.42 },
-  K: { label: 'Adaptable',   color: '#88AA00', pos: 0.49 },
-  L: { label: 'Marginal',    color: '#44BB00', pos: 0.55 },
+  Y: { label: 'Demon',       color: '#8B0000', pos: 0.02 },
+  G: { label: 'Geoplastic',  color: '#AA1100', pos: 0.07 },
+  N: { label: 'Reducing',    color: '#CC3300', pos: 0.13 },
+  H: { label: 'Arid/Harsh',  color: '#DD5500', pos: 0.20 },
+  D: { label: 'Planetoid',   color: '#CC8800', pos: 0.28 },
+  A: { label: 'Alloy',       color: '#DD9944', pos: 0.35 },
+  C: { label: 'Organic',     color: '#BBAA00', pos: 0.41 },
+  K: { label: 'Adaptable',   color: '#88AA00', pos: 0.48 },
+  L: { label: 'Marginal',    color: '#44BB00', pos: 0.54 },
   M: { label: 'Terrestrial', color: '#00AA44', pos: 0.60 },
-  O: { label: 'Pelagic',     color: '#00AAAA', pos: 0.65 },
-  P: { label: 'Ice Giant',   color: '#0088BB', pos: 0.71 },
-  J: { label: 'Gas Giant',   color: '#2233CC', pos: 0.79 },
-  T: { label: 'Substellar',  color: '#5500CC', pos: 0.88 },
+  O: { label: 'Pelagic',     color: '#00AAAA', pos: 0.68 },
+  P: { label: 'Ice Giant',   color: '#0088BB', pos: 0.75 },
+  J: { label: 'Gas Giant',   color: '#2233CC', pos: 0.82 },
+  T: { label: 'Substellar',  color: '#5500CC', pos: 0.90 },
   S: { label: 'Stellar',     color: '#ff00ff', pos: 0.98 },
 };
 
@@ -35,6 +36,8 @@ const systemSheetName = params.get("system");
 const KNOWN_COLUMNS = new Set(['Class', 'Type', 'Name', 'Orbit', 'Mass', 'Notes']);
 const system = fetchSheetData(systemSheetName).then(data => {
 
+  console.log(data);
+
   if (data.length > 0) {
     system.name = systemSheetName;
     system.bodies = data.map((item, i) => {
@@ -48,7 +51,7 @@ const system = fetchSheetData(systemSheetName).then(data => {
         class: item.Class,
         type: item.Type,
         name: item.Name,
-        orbit: item['Orbit'],
+        orbit: item.Orbit,
         mass: item.Mass,
         notes: item.Notes,
         ...(Object.keys(extras).length > 0 ? { extras } : {}),
@@ -195,15 +198,17 @@ function revealContact(body, cls, def) {
           <span>${body.orbit} AU</span>` : ''}
       </span>
     </div>
-    <div class="contact-notes contact-expanded">
+
+    ${body.notes ? `<div class="contact-notes contact-expanded">
       <span class="metric-label">NOTES</span> <span>${body.notes || ''}</span>
-    </div>
-    <div class="contact-extras contact-expanded">
+    </div>` : ''}
+
+    ${ifExtrasExist(body.extras) ? `<div class="contact-extras contact-expanded">
       ${body.extras ? Object.entries(body.extras)
         .filter(([k, v]) => v != null && v !== '')
         .map(([k, v]) => `<span class="contact-metric"><span class="metric-label">${k}</span><span>${v}</span></span>`)
         .join('') : ''}
-    </div>
+    </div>` : ''}
 
     </div>
   `;
@@ -244,6 +249,10 @@ function sortContacts() {
   entries.forEach(el => signalsList.appendChild(el));
 }
 
+function ifExtrasExist(extras) {
+  return Object.values(extras).some(v => v !== null);
+}
+
 // ── Rainbow bar ────────────────────────────────────────────────────────────
 function drawRainbow(pos) {
   const W = rainbowCanvas.width;
@@ -253,19 +262,20 @@ function drawRainbow(pos) {
 
   // Gradient
   const grad = rCtx.createLinearGradient(0, 0, W, 0);
-  grad.addColorStop(0.03, '#8B000077');
-  grad.addColorStop(0.10, '#AA110066');
-  grad.addColorStop(0.18, '#CC330066');
-  grad.addColorStop(0.26, '#DD550066');
-  grad.addColorStop(0.33, '#CC880066');
-  grad.addColorStop(0.42, '#BBAA0066');
-  grad.addColorStop(0.49, '#66BB0066');
-  grad.addColorStop(0.55, '#00AA4477');
+  grad.addColorStop(0.02, '#8B000077');
+  grad.addColorStop(0.07, '#AA110066');
+  grad.addColorStop(0.13, '#CC330066');
+  grad.addColorStop(0.20, '#DD550066');
+  grad.addColorStop(0.28, '#CC880066');
+  grad.addColorStop(0.35, '#DD991166');
+  grad.addColorStop(0.41, '#BBAA0066');
+  grad.addColorStop(0.48, '#66BB0066');
+  grad.addColorStop(0.54, '#00AA4477');
   grad.addColorStop(0.60, '#00AA8866');
-  grad.addColorStop(0.65, '#0099BB66');
-  grad.addColorStop(0.71, '#0088BB66');
-  grad.addColorStop(0.79, '#2233CC66');
-  grad.addColorStop(0.88, '#5500CC77');
+  grad.addColorStop(0.68, '#0099BB66');
+  grad.addColorStop(0.75, '#0088BB66');
+  grad.addColorStop(0.82, '#2233CC66');
+  grad.addColorStop(0.90, '#5500CC77');
   grad.addColorStop(0.98, '#ff00f277');
   rCtx.fillStyle = grad;
   rCtx.fillRect(0, 0, W, H);
