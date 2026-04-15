@@ -132,3 +132,7 @@ canvas {
     display: block;
     margin: 0 auto;
 }
+
+#contacts-header { display: flex; }
+#contacts-header h2 { flex-grow: 2; }
+#discourse-export { align-self: center; }

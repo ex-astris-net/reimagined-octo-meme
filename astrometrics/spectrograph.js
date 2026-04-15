@@ -36,8 +36,6 @@ const systemSheetName = params.get("system");
 const KNOWN_COLUMNS = new Set(['Class', 'Type', 'Name', 'Orbit', 'Mass', 'Notes']);
 const system = fetchSheetData(systemSheetName).then(data => {
 
-  console.log(data);
-
   if (data.length > 0) {
     system.name = systemSheetName;
     system.bodies = data.map((item, i) => {
