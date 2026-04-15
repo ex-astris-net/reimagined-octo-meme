@@ -363,13 +363,13 @@ function getActiveBodies(pos) {
 // overwhelming the waveform relative to planetary ones.
 function massToAmp(body) {
   const isStellar = body.class === 'S' || body.class === 'T';
-  
-  // Fields are distributed mass — use a fixed internal value for signal strength
   const mass = body.type === 'field' ? 0.05 : (body.mass ?? 1.0);
 
   const maxMass = isStellar ? 100 : 300;
   const normalized = Math.log1p(mass) / Math.log1p(maxMass);
-  return Math.pow(Math.min(normalized, 1), 0.2);
+  const linear = mass / maxMass;
+  const blended = normalized * 0.35 + linear * 0.65;
+  return Math.pow(Math.min(blended, 1), 0.55);
 }
 
 function buildWaveformTargets(activeBodies) {
