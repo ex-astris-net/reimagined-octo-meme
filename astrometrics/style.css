@@ -153,6 +153,8 @@ button#discourse-export {
 
 button:hover { cursor: pointer; }
 
+a { color: #239edd; }
+
 .modal {
   position: fixed;
   top: 0;
