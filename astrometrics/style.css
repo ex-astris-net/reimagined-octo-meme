@@ -52,9 +52,13 @@ div#contacts h2 {
 div.contact-entry, 
 div.contact-meta, 
 div.contact-basic, 
-span.contact-metric,
 div.contact-extras {
     display: flex;
+}
+
+span.contact-metric {
+    display: inline-flex;
+    max-width: 250px;
 }
 
 span.contact-metric {
