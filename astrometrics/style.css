@@ -133,6 +133,66 @@ canvas {
     margin: 0 auto;
 }
 
-#contacts-header { display: flex; }
+#contacts-header { display: flex; margin-bottom: 1.5em; }
 #contacts-header h2 { flex-grow: 2; }
+
 #discourse-export { align-self: center; }
+button#discourse-export {
+    border: 1px solid #135;
+    border-radius: 5px;
+    padding: 0.25em 0.5em;
+    background-color: #33669944;
+    color: #fff;
+    font-size: 1.25em;
+}
+
+button:hover { cursor: pointer; }
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+#close-modal {
+    padding: 0.25em 0.5em;
+}
+
+.hidden {
+  display: none;
+}
+
+.modal-content {
+  background: #111;
+  color: #eee;
+  padding: 16px;
+  border-radius: 8px;
+  width: 80%;
+  max-width: 700px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#export-textbox {
+  width: 90%;
+  height: 300px;
+  background: #000;
+  color: #0f0;
+  font-family: monospace;
+  padding: 10px;
+  resize: vertical;
+}

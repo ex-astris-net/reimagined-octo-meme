@@ -30,14 +30,21 @@
     <div id="contacts" class="panel">
       <div id="contacts-header">
         <h2>Identified Signals</h2>
-        <button id="discourse-export">export</button>
+        <button id="discourse-export">🗐</button>
       </div>
-
-
-
 
     </div>
 
+  </div>
+
+  <div id="export-modal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span>Export Data</span>
+        <button id="close-modal">&times;</button>
+      </div>
+      <textarea id="export-textbox" readonly></textarea>
+    </div>
   </div>
 
   <script src="fetchSheet.js"></script>
