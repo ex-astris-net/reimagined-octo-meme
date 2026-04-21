@@ -290,7 +290,7 @@ function renderSystems() {
     g.dataset.id = sys.id;
 
     const glow = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-    glow.setAttribute('r', '12');
+    glow.setAttribute('r', '6');
     glow.setAttribute('fill', 'rgba(160,212,255,0.08)');
 
     const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
@@ -372,8 +372,11 @@ mapContainer.addEventListener('mousedown', e => {
 
 window.addEventListener('mousemove', e => {
   if (state.dragging) {
-    state.panX = state.dragStartPanX + (e.clientX - state.dragStartX);
-    state.panY = state.dragStartPanY + (e.clientY - state.dragStartY);
+    const dx = e.clientX - state.dragStartX;
+    const dy = e.clientY - state.dragStartY;
+    if (Math.hypot(dx, dy) < 4) return; // threshold in px
+    state.panX = state.dragStartPanX + dx;
+    state.panY = state.dragStartPanY + dy;
     render();
   }
 });
