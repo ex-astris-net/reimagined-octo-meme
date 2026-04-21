@@ -149,8 +149,7 @@ async function loadData() {
       sectorName:   sec?.name        ?? 'Unknown',
       quadrantName: sec?.quadrantName ?? 'Unknown',
       x, y,
-      class:        r.fields['Class'] ?? '',
-      notes:        r.fields['Notes'] ?? '',
+      faction:      r.fields['Faction'] ?? '',
       gx, gy,
       url:          r.fields['Url'] ?? '',
     };
@@ -291,7 +290,7 @@ function renderSystems() {
     g.dataset.id = sys.id;
 
     const glow = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-    glow.setAttribute('r', '6');
+    glow.setAttribute('r', '12');
     glow.setAttribute('fill', 'rgba(160,212,255,0.08)');
 
     const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
@@ -336,9 +335,8 @@ function selectSystem(sys) {
   [
     ['Sector',      sys.sectorName],
     ['Quadrant',    sys.quadrantName],
-    ['Class',       sys.class || '—'],
-    ['Notes',       sys.notes || '—'],
-    ['Url',         sys.url ? `<a href="${sys.url}" target="_blank">Datalink</a>` : '—'],
+    ['Faction',     sys.faction || '—'],
+    ['Datafile',    sys.url ? `<a href="${sys.url}" target="_blank">${new URL(sys.url).hostname.replace(/^www\./, '')}</a>` : '—'],
   ].forEach(([label, value]) => {
     
     const row = document.createElement('div');

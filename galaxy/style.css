@@ -216,7 +216,7 @@ body {
 }
 
 .info-label {
-  font-size: 9px;
+  font-size: 12px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--ui-text);
@@ -224,7 +224,7 @@ body {
 }
 
 .info-value {
-  font-size: 12px;
+  font-size: 16px;
   color: rgba(180,220,255,0.9);
 }
 
@@ -246,7 +246,6 @@ body {
 .system-label {
   font-family: 'Lekton', monospace;
   fill: var(--label-color);
-  pointer-events: none;
   text-anchor: middle;
   dominant-baseline: hanging;
 }
