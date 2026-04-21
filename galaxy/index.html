@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Star Trek Online Community Galaxy Map</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lekton:ital,wght@0,400;0,700;1,400&family=Orbitron:wght@400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+
+  <div id="loading">
+    <div id="loading-text">Initializing Star Chart</div>
+    <div class="loading-bar"></div>
+  </div>
+
+  <div id="map-container">
+    <canvas id="canvas"></canvas>
+    <svg id="svg-overlay"></svg>
+  </div>
+
+  <div id="hud">
+    <div id="title">United Federation of Planets: Explored Regions</div>
+  </div>
+
+  <div id="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--alpha-color)"></div>Alpha Quadrant</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--beta-color)"></div>Beta Quadrant</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--gamma-color)"></div>Gamma Quadrant</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--delta-color)"></div>Delta Quadrant</div>
+  </div>
+
+  <div id="zoom-controls">
+    <button class="zoom-btn" id="btn-zoom-in">+</button>
+    <button class="zoom-btn" id="btn-zoom-out">−</button>
+    <button class="zoom-btn" id="btn-zoom-fit" title="Fit to screen">FIT</button>
+  </div>
+
+  <div id="info-panel">
+    <div id="info-panel-header">
+      <div id="info-panel-title">—</div>
+      <button id="info-panel-close">✕</button>
+    </div>
+    <div id="info-panel-body"></div>
+  </div>
+
+</div>
+<script src="starmap.js"></script>
+</body>
+</html>
