@@ -148,6 +148,7 @@ async function loadData() {
       sectorId:     secId,
       sectorName:   sec?.name        ?? 'Unknown',
       quadrantName: sec?.quadrantName ?? 'Unknown',
+      type:         r.fields['Type'] ?? '', 
       x, y,
       faction:      r.fields['Faction'] ?? '',
       gx, gy,
@@ -289,27 +290,56 @@ function renderSystems() {
     g.setAttribute('transform', `translate(${cx.toFixed(1)}, ${cy.toFixed(1)})`);
     g.dataset.id = sys.id;
 
-    const glow = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-    glow.setAttribute('r', '6');
-    glow.setAttribute('fill', 'rgba(160,212,255,0.08)');
+    const baseSize = Math.min(12, pxPerLY * 0.4);
+    const size = isSelected ? baseSize * 1.5 : baseSize;
 
-    const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-    dot.setAttribute('r',    isSelected ? '4' : '2.5');
-    dot.setAttribute('fill', isSelected ? '#ffffff' : 'var(--system-dot)');
-    dot.setAttribute('class', 'dot');
+    if (sys.type === 'Star System') {
+      // Diamond
+      const shape = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+      shape.setAttribute('points', `0,${-size} ${size},0 0,${size} ${-size},0`);
+      shape.setAttribute('fill', isSelected ? '#ffffff' : 'var(--system-dot)');
+      shape.setAttribute('class', 'dot');
+      g.appendChild(shape);
 
-    g.appendChild(glow);
-    g.appendChild(dot);
+    } else if (sys.type === 'Facility') {
+      // Downward triangle
+      const shape = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+      shape.setAttribute('points', `0,${size} ${-size},${-size} ${size},${-size}`);
+      shape.setAttribute('fill', isSelected ? '#838282' : 'var(--system-dot)');
+      shape.setAttribute('class', 'dot');
+      g.appendChild(shape);
 
-    if (showLabels) {
+    } else {
+      // Square (POI and fallback)
+      const shape = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      shape.setAttribute('x', -size);
+      shape.setAttribute('y', -size);
+      shape.setAttribute('width', size * 2);
+      shape.setAttribute('height', size * 2);
+      shape.setAttribute('fill', isSelected ? '#ffffff' : 'var(--system-dot)');
+      shape.setAttribute('class', 'dot');
+      g.appendChild(shape);
+    }
+
+    g.addEventListener('mouseenter', () => {
       const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      const systemLabelSize = Math.min(18, pxPerLY * 1.2);
-      label.setAttribute('font-size', systemLabelSize);
+      const labelSize = Math.min(18, BASE_PX_PER_LY * state.zoom * 1.2);
+      
       label.setAttribute('class', 'system-label');
-      label.setAttribute('y', '7');
+      label.setAttribute('x', '0');
+      label.setAttribute('y', String(-(baseSize + labelSize + 5)));
+      label.setAttribute('text-anchor', 'middle');
+      label.removeAttribute('dominant-baseline');
+      label.removeAttribute('alignment-baseline');
+      label.setAttribute('font-size', Math.min(18, BASE_PX_PER_LY * state.zoom * 1.2));
       label.textContent = sys.name;
       g.appendChild(label);
-    }
+    });
+
+    g.addEventListener('mouseleave', () => {
+      const label = g.querySelector('text');
+      if (label) g.removeChild(label);
+    });
 
     g.addEventListener('click', () => selectSystem(sys));
     svg.appendChild(g);
@@ -333,8 +363,8 @@ function selectSystem(sys) {
   body.innerHTML = '';
 
   [
-    ['Sector',      sys.sectorName],
     ['Quadrant',    sys.quadrantName],
+    ['Sector',      sys.sectorName],
     ['Faction',     sys.faction || '—'],
     ['Datafile',    sys.url ? `<a href="${sys.url}" target="_blank">${new URL(sys.url).hostname.replace(/^www\./, '')}</a>` : '—'],
   ].forEach(([label, value]) => {

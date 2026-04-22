@@ -238,7 +238,7 @@ body {
 
 .system-marker circle { transition: r 0.1s, fill 0.1s; }
 
-.system-marker:hover circle.dot {
+.system-marker:hover .dot {
   fill: var(--system-hover);
   r: 4;
 }
