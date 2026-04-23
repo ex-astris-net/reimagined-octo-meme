@@ -1,8 +1,7 @@
 // ============================================================
 // CONFIG — swap these for your actual values
 // ============================================================
-const AIRTABLE_TOKEN = 'patIxnwrFf5hS62xH.8f2cb7ca190b57e4be3cf26800e66f2ca220b5390dc0ea3fc90860c164b3bc38';
-const AIRTABLE_BASE  = 'appKRq1KgOjEkqNBe';
+const LAMBDA_URL = 'https://9xo769s5o3.execute-api.us-west-2.amazonaws.com/default/galaxy-map-airtable';
 
 const TABLES = {
   quadrants: 'quadrants',  // fields: Name, Width, Height
@@ -47,29 +46,20 @@ const state = {
 };
 
 // ============================================================
-// AIRTABLE
+// LOAD DATA
 // ============================================================
-async function airtableFetch(table, params = {}) {
-  const url = new URL(`https://api.airtable.com/v0/${AIRTABLE_BASE}/${encodeURIComponent(table)}`);
-  Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
-  const resp = await fetch(url, {
-    headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}` }
-  });
-  if (!resp.ok) throw new Error(`Airtable error ${resp.status} on table "${table}"`);
-  return resp.json();
-}
 
-async function fetchAll(table, params = {}) {
-  const records = [];
-  let offset = null;
-  do {
-    const p = { ...params };
-    if (offset) p.offset = offset;
-    const data = await airtableFetch(table, p);
-    records.push(...data.records);
-    offset = data.offset ?? null;
-  } while (offset);
-  return records;
+async function loadData() {
+  const resp = await fetch(LAMBDA_URL);
+  if (!resp.ok) throw new Error(`API error ${resp.status}`);
+  const { quadrants, sectors, systems } = await resp.json();
+
+  state.quadrants = quadrants;
+  state.sectors   = sectors;
+  state.systems   = systems.map(sys => ({
+    ...sys,
+    ...toGalaxyLY(sys.quadrantName, sys.a, sys.b, sys.x, sys.y),
+  }));
 }
 
 // ============================================================
@@ -100,61 +90,6 @@ function canvasToLY(cx, cy) {
     gx: (cx - state.panX) / (BASE_PX_PER_LY * state.zoom),
     gy: (cy - state.panY) / (BASE_PX_PER_LY * state.zoom),
   };
-}
-
-// ============================================================
-// DATA LOADING
-// ============================================================
-async function loadData() {
-  // Quadrants
-  const qRecs = await fetchAll(TABLES.quadrants);
-  state.quadrants = qRecs.map(r => ({
-    id:     r.id,
-    name:   r.fields['Name'],
-    width:  r.fields['Width']  ?? 6,
-    height: r.fields['Height'] ?? 6,
-  }));
-
-  // Sectors — Quadrant field is a linked record array
-  const sRecs = await fetchAll(TABLES.sectors);
-  state.sectors = sRecs.map(r => {
-    const qId   = Array.isArray(r.fields['Quadrant']) ? r.fields['Quadrant'][0] : r.fields['Quadrant'];
-    const quad  = state.quadrants.find(q => q.id === qId);
-    const index = r.fields['Index'] ?? 0;
-    const width = quad?.width ?? 1;
-    return {
-        id:           r.id,
-        name:         r.fields['Name'],
-        quadrantId:   qId,
-        quadrantName: quad?.name ?? 'Unknown',
-        a:            index % width,
-        b:            Math.floor(index / width),
-    };
-  });
-
-  // Systems — Sector field is a linked record array
-  const syRecs = await fetchAll(TABLES.systems);
-  state.systems = syRecs.map(r => {
-    const secId = Array.isArray(r.fields['Sector']) ? r.fields['Sector'][0] : r.fields['Sector'];
-    const sec   = state.sectors.find(s => s.id === secId);
-    const x     = r.fields['X'] ?? 0;
-    const y     = r.fields['Y'] ?? 0;
-    const { gx, gy } = sec
-      ? toGalaxyLY(sec.quadrantName, sec.a, sec.b, x, y)
-      : { gx: 0, gy: 0 };
-    return {
-      id:           r.id,
-      name:         r.fields['Name'],
-      sectorId:     secId,
-      sectorName:   sec?.name        ?? 'Unknown',
-      quadrantName: sec?.quadrantName ?? 'Unknown',
-      type:         r.fields['Type'] ?? '', 
-      x, y,
-      faction:      r.fields['Faction'] ?? '',
-      gx, gy,
-      url:          r.fields['Url'] ?? '',
-    };
-  });
 }
 
 // ============================================================
