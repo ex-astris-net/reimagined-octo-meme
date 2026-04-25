@@ -244,7 +244,12 @@ body {
 }
 
 .system-label {
+  paint-order: stroke fill;
+  stroke: #050810;
+  stroke-width: 3px;
+  stroke-linejoin: round;
   font-family: 'Lekton', monospace;
+  font-weight: bold;
   fill: var(--label-color);
   text-anchor: middle;
   dominant-baseline: hanging;
