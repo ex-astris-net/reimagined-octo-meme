@@ -27,11 +27,25 @@
   </div>
 
   <div id="legend">
-    <div class="legend-item"><div class="legend-dot" style="background:var(--alpha-color)"></div>Alpha Quadrant</div>
-    <div class="legend-item"><div class="legend-dot" style="background:var(--beta-color)"></div>Beta Quadrant</div>
-    <div class="legend-item"><div class="legend-dot" style="background:var(--gamma-color)"></div>Gamma Quadrant</div>
-    <div class="legend-item"><div class="legend-dot" style="background:var(--delta-color)"></div>Delta Quadrant</div>
+  <div class="legend-item">
+    <svg width="16" height="16" viewBox="-8 -8 16 16">
+      <polygon points="0,-6 6,0 0,6 -6,0" fill="var(--system-dot)"/>
+    </svg>
+    Star System
   </div>
+  <div class="legend-item">
+    <svg width="16" height="16" viewBox="-8 -8 16 16">
+      <polygon points="0,6 -6,-6 6,-6" fill="var(--system-dot)"/>
+    </svg>
+    Facility
+  </div>
+  <div class="legend-item">
+    <svg width="16" height="16" viewBox="-8 -8 16 16">
+      <rect x="-5" y="-5" width="10" height="10" fill="var(--system-dot)"/>
+    </svg>
+    Point of Interest
+  </div>
+</div>
 
   <div id="zoom-controls">
     <button class="zoom-btn" id="btn-zoom-in">+</button>

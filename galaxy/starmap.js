@@ -228,6 +228,14 @@ function renderSystems() {
     const baseSize = Math.min(12, pxPerLY * 0.4);
     const size = isSelected ? baseSize * 1.5 : baseSize;
 
+    const hitbox = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    hitbox.setAttribute('x', String(-size * 3));
+    hitbox.setAttribute('y', String(-size * 3));
+    hitbox.setAttribute('width', String(size * 6));
+    hitbox.setAttribute('height', String(size * 6));
+    hitbox.setAttribute('fill', 'transparent');
+    g.appendChild(hitbox);
+
     if (sys.type === 'Star System') {
       // Diamond
       const shape = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
@@ -256,6 +264,18 @@ function renderSystems() {
       g.appendChild(shape);
     }
 
+    if (isSelected) {
+      const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      const labelSize = Math.min(18, BASE_PX_PER_LY * state.zoom * 1.2);
+      label.setAttribute('class', 'system-label');
+      label.setAttribute('x', '0');
+      label.setAttribute('y', String(-(baseSize + labelSize + 5)));
+      label.setAttribute('text-anchor', 'middle');
+      label.setAttribute('font-size', labelSize);
+      label.textContent = sys.name;
+      g.appendChild(label);
+    }    
+
     g.addEventListener('mouseenter', () => {
       const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
       const labelSize = Math.min(18, BASE_PX_PER_LY * state.zoom * 1.2);
@@ -272,6 +292,7 @@ function renderSystems() {
     });
 
     g.addEventListener('mouseleave', () => {
+      if (state.selectedSystem?.id === sys.id) return;
       const label = g.querySelector('text');
       if (label) g.removeChild(label);
     });
