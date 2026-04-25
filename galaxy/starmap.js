@@ -49,17 +49,24 @@ const state = {
 // LOAD DATA
 // ============================================================
 
-async function loadData() {
-  const resp = await fetch(LAMBDA_URL);
-  if (!resp.ok) throw new Error(`API error ${resp.status}`);
-  const { quadrants, sectors, systems } = await resp.json();
-
-  state.quadrants = quadrants;
-  state.sectors   = sectors;
-  state.systems   = systems.map(sys => ({
-    ...sys,
-    ...toGalaxyLY(sys.quadrantName, sys.a, sys.b, sys.x, sys.y),
-  }));
+async function loadData(retries = 3) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const resp = await fetch(LAMBDA_URL);
+      if (!resp.ok) throw new Error(`API error ${resp.status}`);
+      const { quadrants, sectors, systems } = await resp.json();
+      state.quadrants = quadrants;
+      state.sectors   = sectors;
+      state.systems   = systems.map(sys => ({
+        ...sys,
+        ...toGalaxyLY(sys.quadrantName, sys.a, sys.b, sys.x, sys.y),
+      }));
+      return;
+    } catch (err) {
+      if (i === retries - 1) throw err;
+      await new Promise(r => setTimeout(r, 1000));
+    }
+  }
 }
 
 // ============================================================
