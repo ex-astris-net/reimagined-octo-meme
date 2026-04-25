@@ -1,0 +1,121 @@
+/* style.css */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: #0a0a12;
+  color: #c8d8e8;
+  font-family: 'Lekton', monospace;
+  overflow: hidden;
+  height: 100dvh;
+  width: 100dvw;
+}
+
+/* ── Map container ─────────────────────────────────────────────────────────── */
+#map-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  cursor: grab;
+}
+#map-container:active { cursor: grabbing; }
+
+#grid-canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
+
+#marker-svg {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+  pointer-events: none; /* hitbox rects inside SVG re-enable as needed */
+}
+
+/* ── Info panel ─────────────────────────────────────────────────────────────── */
+#info-panel {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 260px;
+  background: rgba(10, 10, 20, 0.88);
+  border: 1px solid rgba(200, 216, 232, 0.2);
+  border-radius: 4px;
+  padding: 1rem;
+  backdrop-filter: blur(4px);
+  z-index: 10;
+}
+#info-panel[hidden] { display: none; }
+
+#info-close {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: none;
+  border: none;
+  color: #c8d8e8;
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  opacity: 0.6;
+}
+#info-close:hover { opacity: 1; }
+
+#info-name {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.9rem;
+  margin-bottom: 0.75rem;
+  padding-right: 1.5rem;
+  letter-spacing: 0.05em;
+}
+
+#info-panel h2#info-name { text-transform: uppercase; }
+
+#info-panel dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.25rem 0.75rem;
+  font-size: 0.8rem;
+}
+#info-panel dt { opacity: 0.55; white-space: nowrap; }
+#info-panel dd { word-break: break-all; }
+#info-panel a  { color: #6ab0e0; text-decoration: none; }
+#info-panel a:hover { text-decoration: underline; }
+
+/* ── Legend ──────────────────────────────────────────────────────────────────── */
+#legend {
+  position: absolute;
+  bottom: 1rem;
+  left: 1rem;
+  background: rgba(10, 10, 20, 0.75);
+  border: 1px solid rgba(200, 216, 232, 0.15);
+  border-radius: 4px;
+  padding: 0.6rem 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  z-index: 10;
+  font-size: 0.75rem;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* ── Overlay ─────────────────────────────────────────────────────────────────── */
+#overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 20;
+  font-family: 'Orbitron', sans-serif;
+  letter-spacing: 0.1em;
+  font-size: 0.85rem;
+}
+#overlay[hidden] { display: none; }

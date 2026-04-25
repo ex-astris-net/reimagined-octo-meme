@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>STO Star Map</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Lekton:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div id="map-container">
+    <!-- Canvas draws the grid; SVG floats on top for markers + labels -->
+    <canvas id="grid-canvas"></canvas>
+    <svg id="marker-svg" xmlns="http://www.w3.org/2000/svg"></svg>
+  </div>
+
+  <!-- Info panel (top-right, hidden until a system is selected) -->
+  <aside id="info-panel" hidden>
+    <button id="info-close" aria-label="Close">✕</button>
+    <h2 id="info-name"></h2>
+    <dl>
+      <dt>QUADRANT</dt><dd id="info-quadrant"></dd>
+      <dt>SECTOR</dt>  <dd id="info-sector"></dd>
+      <dt>FACTION</dt> <dd id="info-faction"></dd>
+      <dt>DATAFILE</dt><dd id="info-datafile"></dd>
+    </dl>
+  </aside>
+
+  <!-- Legend (bottom-left) -->
+  <nav id="legend" aria-label="Map legend"></nav>
+
+  <!-- Loading / error overlay -->
+  <div id="overlay" hidden>
+    <span id="overlay-message">Loading…</span>
+  </div>
+
+  <script type="module" src="main.js"></script>
+</body>
+</html>
