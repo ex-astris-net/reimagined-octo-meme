@@ -162,21 +162,23 @@ function buildLabel(sys, sx, sy, zoom, isSelected, isHovered, svgWidth, svgHeigh
     visibility: visible ? 'visible' : 'hidden',
   });
 
-  const rectStroke = searchMatch
+  const rectStroke = (isSelected || isHovered || searchMatch)
     ? accentColor
     : dimmed ? 'rgba(33,44,55,0.4)' : LABEL_BG_STROKE;
-  const rectFill = searchMatch
+  const rectFill = (isSelected || isHovered || searchMatch)
     ? colorFill(accentColor, 0.15)
     : dimmed ? 'rgba(11,22,33,0.4)' : LABEL_BG_FILL;
 
   g.appendChild(svgEl('rect', {
     x: rectX, y: rectY, width: rectW, height: rectH,
     fill: rectFill, stroke: rectStroke,
-    'stroke-width': searchMatch ? 1 : 0.75,
+    'stroke-width': (isSelected || isHovered || searchMatch) ? 1 : 0.75,
     rx: 2,
   }));
 
-  const textFill = dimmed && !searchMatch ? 'rgba(200,216,232,0.3)' : '#c8d8e8';
+  const textFill = dimmed && !searchMatch && !isSelected && !isHovered
+    ? 'rgba(200,216,232,0.3)'
+    : (isSelected || isHovered || searchMatch) ? accentColor : '#c8d8e8';
 
   const text = svgEl('text', {
     x: boxCX, y: boxCY,
