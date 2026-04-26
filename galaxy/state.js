@@ -18,6 +18,11 @@ const _state = {
   hoveredSystemId:  null,   // record ID under cursor, or null
   dataLoaded:       false,
   loadError:        null,   // string | null
+
+  // ── Controls ─────────────────────────────────────────────────────────────
+  searchQuery:    '',       // lowercased search string, '' = no filter
+  colorMode:      'type',   // 'type' | 'faction'
+  showNonCanon:   true,     // if false, non-canon systems are hidden
 };
 
 // ── Viewport ────────────────────────────────────────────────────────────────
@@ -44,6 +49,14 @@ export function getHoveredId()        { return _state.hoveredSystemId; }
 export function setHoveredId(id)      { _state.hoveredSystemId = id; }
 
 // ── Convenience ──────────────────────────────────────────────────────────────
+// ── Controls ────────────────────────────────────────────────────────────────
+export function getSearchQuery()      { return _state.searchQuery; }
+export function setSearchQuery(q)     { _state.searchQuery = q; }
+export function getColorMode()        { return _state.colorMode; }
+export function setColorMode(m)       { _state.colorMode = m; }
+export function getShowNonCanon()     { return _state.showNonCanon; }
+export function setShowNonCanon(v)    { _state.showNonCanon = v; }
+
 /** Return the full system record for the currently selected ID, or null. */
 export function getSelectedSystem() {
   if (!_state.selectedSystemId) return null;

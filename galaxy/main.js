@@ -8,6 +8,7 @@ import { setData, setLoadError, getViewport,
 import { drawGrid }                           from './grid.js';
 import { initMarkerGroups, drawMarkers }      from './markers.js';
 import { initViewport }                       from './viewport.js';
+import { initControls }                           from './controls.js';
 import { showLoading, hideLoading, showError,
          showInfoPanel, hideInfoPanel,
          initLegend }                         from './ui.js';
@@ -81,14 +82,18 @@ async function init() {
   // 4. Attach viewport controls
   initViewport(container, redraw, onSystemClick);
 
-  // 5. Load data — enforce a minimum display time so the LCARS animation gets to breathe
+  // 5. Init control box
+  initControls(redraw);
+
+  // 6. Load data — enforce a minimum display time so the LCARS animation gets to breathe
   showLoading();
-  const MIN_LOADING_MS = 3500;
+  const MIN_LOADING_MS = 2500;
   try {
     const [data] = await Promise.all([
       loadData(),
       new Promise(resolve => setTimeout(resolve, MIN_LOADING_MS)),
     ]);
+    console.log(data);
     setData(data);
     hideLoading();
     redraw();

@@ -16,6 +16,10 @@ export const MARKER_BASE_SIZE  = 6;   // base half-size in ly units
 export const MARKER_MAX_PX     = 14;  // max rendered half-size in pixels
 export const LABEL_BASE_SIZE   = 14;  // base font size in px at zoom 1
 export const LABEL_MAX_PX      = 18;  // cap on label font size
+export const LABEL_BG_FILL     = 'rgba(11,22,33,0.80)';
+export const LABEL_BG_STROKE   = 'rgba(33,44,55,0.80)';
+export const LABEL_ACTIVE_FILL = '#00ff0040';
+export const LABEL_ACTIVE_STROKE = '#00ff00';
 
 // ── Interaction ────────────────────────────────────────────────────────────
 export const DRAG_THRESHOLD_PX = 4;   // pixels moved before a mousedown becomes a pan
@@ -37,8 +41,27 @@ export const QUADRANT_LAYOUT = {
 export const SYSTEM_TYPES = {
   'Star System':      'diamond',
   'Facility':         'triangle',
-  'Point of Interest':'square',
+  'Point of Interest':'circle',
+  'Unexplored':       'square'
 };
+
+// ── Faction colors ────────────────────────────────────────────────────────
+export const FACTION_COLORS = {
+  'United Federation of Planets': '#4a90d9',
+  'Romulan Republic':             '#4caf7d',
+  'Klingon Defense Force':        '#c0392b',
+  'Independent':                  '#888899',
+};
+export const FACTION_COLOR_DEFAULT = '#556677'; // fallback for unknown factions
+
+// ── Type colors ────────────────────────────────────────────────────────────
+export const TYPE_COLORS = {
+  'Star System':      '#40c8e8',
+  'Facility':         '#e8c840',
+  'Point of Interest':'#7b68ee',
+  'Unexplored':       '#556677',
+};
+export const TYPE_COLOR_DEFAULT = '#336699';
 
 // ── Fonts ──────────────────────────────────────────────────────────────────
 export const FONT_UI      = 'Orbitron, sans-serif';

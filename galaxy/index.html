@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>STO Galaxy Map</title>
+  <title>STO Milky Way Galaxy Map</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Lekton:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
@@ -29,6 +29,36 @@
     </dl>
   </aside>
 
+  <!-- Control box (bottom-right) -->
+  <aside id="controls">
+    <div class="ctrl-section">
+      <label class="ctrl-label" for="ctrl-search">Search</label>
+      <div class="ctrl-search-row">
+        <input id="ctrl-search" type="text" placeholder="System name…" autocomplete="off" spellcheck="false" />
+        <button id="ctrl-search-clear" aria-label="Clear search">✕</button>
+      </div>
+    </div>
+    <div class="ctrl-section">
+      <label class="ctrl-checkbox">
+        <input type="checkbox" id="ctrl-noncanon" checked />
+        <span>Show non-canon systems</span>
+      </label>
+    </div>
+    <div class="ctrl-section">
+      <span class="ctrl-label">Color by</span>
+      <div class="ctrl-radio-group">
+        <label class="ctrl-radio">
+          <input type="radio" name="color-mode" value="type" checked />
+          <span>Type</span>
+        </label>
+        <label class="ctrl-radio">
+          <input type="radio" name="color-mode" value="faction" />
+          <span>Faction</span>
+        </label>
+      </div>
+    </div>
+  </aside>
+
   <!-- Legend (bottom-left) -->
   <nav id="legend" aria-label="Map legend"></nav>
 
@@ -39,6 +69,7 @@
         <div class="lcars-corner"></div>
         <div class="lcars-title-bar">
           <span class="lcars-title">NAVIGATIONAL ARRAY</span>
+          <span class="lcars-stardate" id="lcars-stardate"></span>
         </div>
       </div>
       <div class="lcars-body">

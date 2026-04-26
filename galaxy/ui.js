@@ -154,9 +154,10 @@ export function showError(msg) {
 const LEGEND_ITEMS = [
   {
     label: 'Star System',
-    // Diamond: rotated square, 10×10 px swatch
+    // 4-pointed star with concave bezier sides, matching makeStar
     svg: `<svg width="14" height="14" viewBox="0 0 14 14" xmlns="http://www.w3.org/2000/svg">
-            <polygon points="7,1 13,7 7,13 1,7" fill="none" stroke="#c8d8e8" stroke-width="1.5"/>
+            <path d="M 7,1 C 9.3,4.3 9.3,4.3 13,7 C 9.3,9.7 9.3,9.7 7,13 C 4.7,9.7 4.7,9.7 1,7 C 4.7,4.3 4.7,4.3 7,1 Z"
+                  fill="none" stroke="#c8d8e8" stroke-width="1.5" stroke-linejoin="round"/>
           </svg>`,
   },
   {
@@ -168,6 +169,13 @@ const LEGEND_ITEMS = [
   },
   {
     label: 'Point of Interest',
+    // Circle
+    svg: `<svg width="14" height="14" viewBox="0 0 14 14" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="7" cy="7" r="5" fill="none" stroke="#c8d8e8" stroke-width="1.5"/>
+          </svg>`,
+  },
+  {
+    label: 'Unexplored',
     // Square
     svg: `<svg width="14" height="14" viewBox="0 0 14 14" xmlns="http://www.w3.org/2000/svg">
             <rect x="2" y="2" width="10" height="10" fill="none" stroke="#c8d8e8" stroke-width="1.5"/>
