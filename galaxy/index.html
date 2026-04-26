@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>STO Star Map</title>
+  <title>STO Galaxy Map</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Lekton:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
@@ -22,10 +22,10 @@
     <button id="info-close" aria-label="Close">✕</button>
     <h2 id="info-name"></h2>
     <dl>
-      <dt>QUADRANT</dt><dd id="info-quadrant"></dd>
-      <dt>SECTOR</dt>  <dd id="info-sector"></dd>
-      <dt>FACTION</dt> <dd id="info-faction"></dd>
-      <dt>DATAFILE</dt><dd id="info-datafile"></dd>
+      <dt>Quadrant</dt><dd id="info-quadrant"></dd>
+      <dt>Sector</dt>  <dd id="info-sector"></dd>
+      <dt>Faction</dt> <dd id="info-faction"></dd>
+      <dt>Datafile</dt><dd id="info-datafile"></dd>
     </dl>
   </aside>
 
@@ -34,7 +34,45 @@
 
   <!-- Loading / error overlay -->
   <div id="overlay" hidden>
-    <span id="overlay-message">Loading…</span>
+    <div id="lcars-loader">
+      <div class="lcars-header">
+        <div class="lcars-corner"></div>
+        <div class="lcars-title-bar">
+          <span class="lcars-title">NAVIGATIONAL ARRAY</span>
+        </div>
+      </div>
+      <div class="lcars-body">
+        <div class="lcars-sidebar">
+          <div class="lcars-pip"></div>
+          <div class="lcars-pip"></div>
+          <div class="lcars-pip"></div>
+          <div class="lcars-pip"></div>
+        </div>
+        <div class="lcars-main">
+          <div class="lcars-status" id="lcars-status">INITIALIZING</div>
+          <div class="lcars-segments" id="lcars-segments">
+            <div class="lcars-seg"></div>
+            <div class="lcars-seg"></div>
+            <div class="lcars-seg"></div>
+            <div class="lcars-seg"></div>
+            <div class="lcars-seg"></div>
+            <div class="lcars-seg"></div>
+            <div class="lcars-seg"></div>
+            <div class="lcars-seg"></div>
+            <div class="lcars-seg"></div>
+            <div class="lcars-seg"></div>
+          </div>
+          <div class="lcars-subtext" id="lcars-subtext">ACCESSING ASTROMETRIC DATABASE</div>
+        </div>
+      </div>
+      <div class="lcars-footer">
+        <div class="lcars-footer-bar"></div>
+        <div class="lcars-footer-end"></div>
+      </div>
+    </div>
+    <div id="overlay-error" hidden>
+      <span id="overlay-message"></span>
+    </div>
   </div>
 
   <script type="module" src="main.js"></script>

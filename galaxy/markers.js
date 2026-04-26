@@ -12,7 +12,7 @@ import { getData, getSelectedId, getHoveredId } from './state.js';
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
 // Labels always visible above this zoom level
-const LABEL_ALWAYS_ZOOM = 3;
+const LABEL_ALWAYS_ZOOM = 5;
 // Hitbox half-size in px (larger than visible marker for easier targeting)
 const HITBOX_SIZE = 18;
 
@@ -66,8 +66,13 @@ function markerSize(zoom) {
   return Math.min(MARKER_BASE_SIZE * zoom, MARKER_MAX_PX);
 }
 
+// Label font size: starts at 9px at LABEL_ALWAYS_ZOOM, grows slowly via sqrt, caps at 14px.
+// Below LABEL_ALWAYS_ZOOM it only shows on hover/select — still use a readable minimum there.
 function labelSize(zoom) {
-  return Math.min(LABEL_BASE_SIZE * (zoom / 2), LABEL_MAX_PX);
+  const MIN_SIZE = 12;
+  const MAX_SIZE = 24;
+  const t = Math.max(0, zoom - LABEL_ALWAYS_ZOOM);
+  return Math.min(MIN_SIZE + Math.sqrt(t) * 2.5, MAX_SIZE);
 }
 
 function buildMarker(sys, sx, sy, zoom, isSelected, isHovered) {
@@ -75,8 +80,8 @@ function buildMarker(sys, sx, sy, zoom, isSelected, isHovered) {
   const builder  = SHAPE_BUILDERS[shape] ?? makeDiamond;
   const size     = markerSize(zoom);
   const active   = isSelected || isHovered;
-  const fill     = active ? '#ffffff' : '#0a0a12';
-  const stroke   = active ? '#ffffff' : '#c8d8e8';
+  const fill     = active ? '#00ff0040' : '#33669940';
+  const stroke   = active ? '#00ff00' : '#336699';
 
   const g = svgEl('g', {
     transform: `translate(${sx},${sy})`,
@@ -99,26 +104,83 @@ function buildMarker(sys, sx, sy, zoom, isSelected, isHovered) {
   return g;
 }
 
-function buildLabel(sys, sx, sy, zoom, isSelected, isHovered) {
-  const size    = labelSize(zoom);
-  const visible = isSelected || isHovered || zoom >= LABEL_ALWAYS_ZOOM;
+// ── Callout label constants ───────────────────────────────────────────────────
+const LABEL_PAD_X    = 6;
+const LABEL_PAD_Y    = 4;
+const LABEL_OFFSET_X = 45;  
+const LABEL_OFFSET_Y = 30;  
+const LABEL_CH_WIDTH = 0.56;
 
-  const text = svgEl('text', {
-    x: sx,
-    y: sy - markerSize(zoom) - size * 0.4,
-    'text-anchor': 'middle',
-    'dominant-baseline': 'auto',
-    'font-family': FONT_LABEL,
-    'font-size': size,
-    fill: '#c8d8e8',
-    stroke: '#0a0a12',
-    'stroke-width': 3,
-    'paint-order': 'stroke fill',
+// Priority order: bottom-right, bottom-left, top-right, top-left
+const QUADRANT_PRIORITY = [
+  {  dirX:  1, dirY:  1 },
+  {  dirX: -1, dirY:  1 },
+  {  dirX:  1, dirY: -1 },
+  {  dirX: -1, dirY: -1 },
+];
+
+function buildLabel(sys, sx, sy, zoom, isSelected, isHovered, svgWidth, svgHeight) {
+  const fontSize = labelSize(zoom);
+  const visible  = isSelected || isHovered || zoom >= LABEL_ALWAYS_ZOOM;
+  const mSize    = markerSize(zoom);
+
+  // Estimate box dimensions
+  const textW = sys.name.length * fontSize * LABEL_CH_WIDTH;
+  const textH = fontSize;
+  const rectW = textW + LABEL_PAD_X * 2;
+  const rectH = textH + LABEL_PAD_Y * 2;
+
+  // ── Pick first quadrant where the box fits on screen ──────────────────────
+  let dirX =  1, dirY = 1; // fallback: bottom-right
+  for (const candidate of QUADRANT_PRIORITY) {
+    const boxCX = sx + candidate.dirX * LABEL_OFFSET_X;
+    const boxCY = sy + candidate.dirY * LABEL_OFFSET_Y;
+    if (
+      boxCX - rectW / 2 >= 0 &&
+      boxCX + rectW / 2 <= svgWidth &&
+      boxCY - rectH / 2 >= 0 &&
+      boxCY + rectH / 2 <= svgHeight
+    ) {
+      dirX = candidate.dirX;
+      dirY = candidate.dirY;
+      break;
+    }
+  }
+
+  // ── Box centre ─────────────────────────────────────────────────────────────
+  const boxCX = sx + dirX * LABEL_OFFSET_X;
+  const boxCY = sy + dirY * LABEL_OFFSET_Y;
+  const rectX = boxCX - rectW / 2;
+  const rectY = boxCY - rectH / 2;
+
+
+  const g = svgEl('g', {
     'data-marker-id': sys.id,
     visibility: visible ? 'visible' : 'hidden',
   });
+
+  g.appendChild(svgEl('rect', {
+    x: rectX, y: rectY,
+    width: rectW, height: rectH,
+    fill: 'rgba(11,22,33,0.80)',
+    stroke: 'rgba(33,44,55,0.80)',
+    'stroke-width': 0.75,
+    rx: 2,
+  }));
+
+  const text = svgEl('text', {
+    x: boxCX,
+    y: boxCY,
+    'text-anchor': 'middle',
+    'dominant-baseline': 'central',
+    'font-family': FONT_LABEL,
+    'font-size': fontSize,
+    fill: '#c8d8e8',
+  });
   text.textContent = sys.name;
-  return text;
+  g.appendChild(text);
+
+  return g;
 }
 
 // ── Public API ────────────────────────────────────────────────────────────────
@@ -166,6 +228,6 @@ export function drawMarkers(markerGroup, labelGroup, { zoom, offsetX, offsetY })
     const isHovered  = sys.id === hoveredId;
 
     markerGroup.appendChild(buildMarker(sys, sx, sy, zoom, isSelected, isHovered));
-    labelGroup.appendChild( buildLabel( sys, sx, sy, zoom, isSelected, isHovered));
+    labelGroup.appendChild( buildLabel( sys, sx, sy, zoom, isSelected, isHovered, W, H));
   }
 }

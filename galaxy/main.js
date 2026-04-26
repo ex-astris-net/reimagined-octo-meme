@@ -81,10 +81,14 @@ async function init() {
   // 4. Attach viewport controls
   initViewport(container, redraw, onSystemClick);
 
-  // 5. Load data
+  // 5. Load data — enforce a minimum display time so the LCARS animation gets to breathe
   showLoading();
+  const MIN_LOADING_MS = 3500;
   try {
-    const data = await loadData();
+    const [data] = await Promise.all([
+      loadData(),
+      new Promise(resolve => setTimeout(resolve, MIN_LOADING_MS)),
+    ]);
     setData(data);
     hideLoading();
     redraw();

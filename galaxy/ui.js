@@ -12,8 +12,14 @@ const quadrantEl = document.getElementById('info-quadrant');
 const sectorEl   = document.getElementById('info-sector');
 const factionEl  = document.getElementById('info-faction');
 const datafileEl = document.getElementById('info-datafile');
-const overlay    = document.getElementById('overlay');
-const overlayMsg = document.getElementById('overlay-message');
+const overlay        = document.getElementById('overlay');
+const lcarsLoader    = document.getElementById('lcars-loader');
+const lcarsStatus    = document.getElementById('lcars-status');
+const lcarsSubtext   = document.getElementById('lcars-subtext');
+const lcarsStardate  = document.getElementById('lcars-stardate');
+const lcarsSegs      = Array.from(document.querySelectorAll('.lcars-seg'));
+const overlayError   = document.getElementById('overlay-error');
+const overlayMessage = document.getElementById('overlay-message');
 
 // ── Info panel ───────────────────────────────────────────────────────────────
 
@@ -41,7 +47,7 @@ export function showInfoPanel(onClose) {
   if (sys.url) {
     try {
       const hostname = new URL(sys.url).hostname;
-      const display  = hostname.split('.').slice(-3).join('.');
+      const display  = hostname;
       const a        = document.createElement('a');
       a.href         = sys.url;
       a.target       = '_blank';
@@ -71,42 +77,97 @@ export function hideInfoPanel() {
   }
 }
 
+// ── LCARS animation ───────────────────────────────────────────────────────────
+
+const LCARS_STATUSES = [
+  'INITIALIZING',
+  'ACCESSING ASTROMETRIC DATABASE',
+  'VERIFYING SECTOR COORDINATES',
+  'LOADING NAVIGATIONAL DATA',
+  'CALIBRATING SENSOR ARRAY',
+  'RESOLVING QUADRANT BOUNDARIES',
+  'SYNCHRONIZING STARFIELD',
+  'CROSS-REFERENCING FEDERATION CHARTS',
+  'ALMOST THERE',
+];
+
+const LCARS_SUBTEXTS = [
+  'ACCESSING ASTROMETRIC DATABASE',
+  'STARFLEET CARTOGRAPHY DIVISION',
+  'MEMORY ALPHA UPLINK ACTIVE',
+  'LONG RANGE SENSOR SWEEP',
+  'FEDERATION STANDARD COORDINATE SYSTEM',
+  'PLEASE STAND BY',
+];
+
+let _lcarsInterval = null;
+let _lcarsFrame    = 0;
+
+function lcarsStep() {
+  _lcarsFrame++;
+
+  const filled = (_lcarsFrame % (lcarsSegs.length + 4));
+  lcarsSegs.forEach((seg, i) => {
+    seg.classList.toggle('lit',        i < filled);
+    seg.classList.toggle('lit-bright', i === filled - 1);
+  });
+
+  if (_lcarsFrame % 3 === 0) {
+    const idx = Math.floor(_lcarsFrame / 3) % LCARS_STATUSES.length;
+    lcarsStatus.textContent = LCARS_STATUSES[idx];
+  }
+
+  if (_lcarsFrame % 5 === 0) {
+    const idx = Math.floor(_lcarsFrame / 5) % LCARS_SUBTEXTS.length;
+    lcarsSubtext.textContent = LCARS_SUBTEXTS[idx];
+  }
+}
+
 // ── Loading / error overlay ───────────────────────────────────────────────────
 
 export function showLoading() {
-  overlayMsg.textContent = 'Loading…';
+  overlayError.setAttribute('hidden', '');
+  lcarsLoader.removeAttribute('hidden');
+  _lcarsFrame = 0;
   overlay.removeAttribute('hidden');
+  _lcarsInterval = setInterval(lcarsStep, 280);
+  lcarsStep();
 }
 
 export function hideLoading() {
+  clearInterval(_lcarsInterval);
+  _lcarsInterval = null;
   overlay.setAttribute('hidden', '');
 }
 
 export function showError(msg) {
-  overlayMsg.textContent = `Error: ${msg}`;
+  clearInterval(_lcarsInterval);
+  _lcarsInterval = null;
+  lcarsLoader.setAttribute('hidden', '');
+  overlayMessage.textContent = msg;
+  overlayError.removeAttribute('hidden');
   overlay.removeAttribute('hidden');
-  // Error stays visible until user acts — no auto-hide
 }
 
 // ── Legend ────────────────────────────────────────────────────────────────────
 
 const LEGEND_ITEMS = [
   {
-    label: 'STAR SYSTEM',
+    label: 'Star System',
     // Diamond: rotated square, 10×10 px swatch
     svg: `<svg width="14" height="14" viewBox="0 0 14 14" xmlns="http://www.w3.org/2000/svg">
             <polygon points="7,1 13,7 7,13 1,7" fill="none" stroke="#c8d8e8" stroke-width="1.5"/>
           </svg>`,
   },
   {
-    label: 'FACILITY',
+    label: 'Facility',
     // Downward triangle
     svg: `<svg width="14" height="14" viewBox="0 0 14 14" xmlns="http://www.w3.org/2000/svg">
             <polygon points="7,13 1,2 13,2" fill="none" stroke="#c8d8e8" stroke-width="1.5"/>
           </svg>`,
   },
   {
-    label: 'POINT OF INTEREST',
+    label: 'Point of Interest',
     // Square
     svg: `<svg width="14" height="14" viewBox="0 0 14 14" xmlns="http://www.w3.org/2000/svg">
             <rect x="2" y="2" width="10" height="10" fill="none" stroke="#c8d8e8" stroke-width="1.5"/>
