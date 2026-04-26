@@ -49,10 +49,11 @@ export const SYSTEM_TYPES = {
 export const FACTION_COLORS = {
   'United Federation of Planets': '#4a90d9',
   'Romulan Republic':             '#4caf7d',
-  'Klingon Defense Force':        '#c0392b',
-  'Independent':                  '#888899',
+  'Klingon Empire':               '#c0392b',
+  'Dominion':                     '#9b59b6',
+  'Independent':                  '#d4c87a',
 };
-export const FACTION_COLOR_DEFAULT = '#556677'; // fallback for unknown factions
+export const FACTION_COLOR_DEFAULT = '#445566'; // fallback for unknown/unset factions
 
 // ── Type colors ────────────────────────────────────────────────────────────
 export const TYPE_COLORS = {
