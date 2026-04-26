@@ -108,6 +108,10 @@ body {
   gap: 0.5rem;
 }
 
+@media (max-width: 600px) {
+  #legend { display: none; }
+}
+
 /* ── Control box ─────────────────────────────────────────────────────────────── */
 #controls {
   position: absolute;
@@ -219,7 +223,7 @@ body {
 
 /* ── LCARS loader ────────────────────────────────────────────────────────────── */
 #lcars-loader {
-  width: 420px;
+  width: 450px;
   font-family: 'Orbitron', sans-serif;
   letter-spacing: 0.08em;
 }
