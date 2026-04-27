@@ -73,7 +73,8 @@ div.contact-entry {
 
 div.contact-meta, 
 div.contact-notes, 
-div.contact-extras {
+div.contact-extras,
+div.contact-overhead {
     padding: 1em 1em 0.5em 1em;
     gap: 2em;
 }
@@ -111,8 +112,9 @@ div.contact-basic {
     text-transform: uppercase;
 }
 
-.contact-notes {
+.contact-notes, .contact-overhead {
     border-top: 1px solid #123;
+    margin-bottom: 1em;
 }
 
 .contact-extras {

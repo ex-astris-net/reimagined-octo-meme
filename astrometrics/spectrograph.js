@@ -33,7 +33,7 @@ const params = new URLSearchParams(window.location.search);
 const systemSheetName = params.get("system");
 
 // fetch sheet data here
-const KNOWN_COLUMNS = new Set(['Class', 'Type', 'Name', 'Orbit', 'Mass', 'Notes']);
+const KNOWN_COLUMNS = new Set(['Class', 'Type', 'Name', 'Orbit', 'Mass', 'Notes', 'Overhead']);
 const system = fetchSheetData(systemSheetName).then(data => {
 
   if (data.length > 0) {
@@ -52,6 +52,7 @@ const system = fetchSheetData(systemSheetName).then(data => {
         orbit: item.Orbit,
         mass: item.Mass,
         notes: item.Notes,
+        overhead: item.Overhead, 
         ...(Object.keys(extras).length > 0 ? { extras } : {}),
       };
     });
@@ -207,6 +208,10 @@ function revealContact(body, cls, def) {
         .map(([k, v]) => `<span class="contact-metric"><span class="metric-label">${k}</span><span>${v}</span></span>`)
         .join('') : ''}
     </div>` : ''}
+
+    ${body.overhead ? `<div class="contact-overhead contact-expanded">
+      <span class="metric-label">OVERHEAD SCAN RESULTS</span> <span>${body.overhead || ''}</span>
+    </div>` : ''}    
 
     </div>
   `;
