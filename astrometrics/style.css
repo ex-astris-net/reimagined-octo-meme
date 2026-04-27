@@ -74,7 +74,7 @@ div.contact-entry {
 div.contact-meta, 
 div.contact-notes, 
 div.contact-extras,
-div.contact-overhead {
+div.contact-srs {
     padding: 1em 1em 0.5em 1em;
     gap: 2em;
 }
@@ -83,11 +83,21 @@ span.contact-metric {
     flex-direction: column;
 }
 
-span.metric-label {
+span.metric-label, button.srs {
     text-transform: uppercase;
     font-family: "Share Tech Mono", monospace;
     font-size: 0.8em;
     color: #aaa;
+}
+
+button.srs {
+    background-color: #024;
+    border: 1px solid #135;
+    border-radius: 5px;
+    padding: 0.5em;
+    align-self: center;
+    color: #369;
+    margin-right: 5em;
 }
 
 .contact-class, .contact-name {
@@ -112,7 +122,7 @@ div.contact-basic {
     text-transform: uppercase;
 }
 
-.contact-notes, .contact-overhead {
+.contact-notes, .contact-srs {
     border-top: 1px solid #123;
     margin-bottom: 1em;
 }
@@ -129,8 +139,10 @@ div.contact-basic {
     background-color: #33669920;
 }
 
+button.srs.contact-expanded, 
 div.contact-expanded { display: none; }
 
+.band-active button.srs.contact-expanded, 
 .band-active div.contact-expanded {
     display: flex;
 }
@@ -153,8 +165,36 @@ button#discourse-export {
     font-size: 1.25em;
 }
 
-button:hover { cursor: pointer; }
+.srs-dot {
+  color: #00ffff;
+  margin-right: 0.5em;
+}
 
+.srs-bar {
+  display: inline-flex;
+  gap: 2px;
+  vertical-align: middle;
+  margin-left: 0.5em;
+}
+
+.srs-segment {
+  width: 5px;
+  height: 10px;
+  background: #013;
+  border-radius: 2px;
+  transition: background 0.1s ease;
+}
+
+.srs-segment.lit {
+  background: #00ffff;
+  box-shadow: 0 0 4px #00ffffaa;
+}
+
+.unscanned {
+  display: none !important;
+}
+
+button:hover { cursor: pointer; }
 a { color: #239edd; }
 
 .modal {

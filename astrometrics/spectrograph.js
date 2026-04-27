@@ -33,7 +33,7 @@ const params = new URLSearchParams(window.location.search);
 const systemSheetName = params.get("system");
 
 // fetch sheet data here
-const KNOWN_COLUMNS = new Set(['Class', 'Type', 'Name', 'Orbit', 'Mass', 'Notes', 'Overhead']);
+const KNOWN_COLUMNS = new Set(['Class', 'Type', 'Name', 'Orbit', 'Mass', 'Notes', 'SRS']);
 const system = fetchSheetData(systemSheetName).then(data => {
 
   if (data.length > 0) {
@@ -52,7 +52,7 @@ const system = fetchSheetData(systemSheetName).then(data => {
         orbit: item.Orbit,
         mass: item.Mass,
         notes: item.Notes,
-        overhead: item.Overhead, 
+        srs: item.SRS, 
         ...(Object.keys(extras).length > 0 ? { extras } : {}),
       };
     });
@@ -72,6 +72,7 @@ const system = fetchSheetData(systemSheetName).then(data => {
 let activeBodies = [];
 let activeContact = null;
 let revealed = new Set();
+let scanned = new Set();
 
 let noiseTime = 0;
 let waveformAnim = null;
@@ -188,6 +189,9 @@ function revealContact(body, cls, def) {
         <span class="contact-name">${body.name}</span>
         <span class="contact-type" style="background-color:${def.color}80">${def.label}</span>
       </div>
+
+      <button class="srs contact-expanded"><span class="srs-dot">◎</span>Short Range</button>
+
       <span class="contact-metric">
         ${body.mass ? `<span class="metric-label">Mass</span>
           <span>${body.mass} ${(body.class === 'S' || body.class === 'T') ? 'Mo' : 'Me'}</span>` : ''}
@@ -209,13 +213,55 @@ function revealContact(body, cls, def) {
         .join('') : ''}
     </div>` : ''}
 
-    ${body.overhead ? `<div class="contact-overhead contact-expanded">
-      <span class="metric-label">OVERHEAD SCAN RESULTS</span> <span>${body.overhead || ''}</span>
-    </div>` : ''}    
+    <div class="contact-srs contact-expanded unscanned">
+      <span class="metric-label">SRS RESULTS</span> <span>${body.srs || 'No significant readings.'}</span>
+    </div> 
 
     </div>
   `;
   entry.addEventListener('click', () => activateContact(id));
+
+  const srsBtn = entry.querySelector('button.srs');
+  if (srsBtn) {
+    srsBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const id = body.id;
+      if (scanned.has(id)) return;
+
+      srsBtn.disabled = true;
+      srsBtn.innerHTML = '<span class="srs-bar"><span class="srs-fill"></span>Short Range</span>';
+
+      // fake loading
+      const NUM_SEGMENTS = 16;
+      srsBtn.disabled = true;
+      srsBtn.innerHTML = `<span class="srs-bar">${
+        Array.from({length: NUM_SEGMENTS}, () => `<span class="srs-segment"></span>`).join('')
+      }</span>`;
+
+      const segments = [...srsBtn.querySelectorAll('.srs-segment')];
+      let current = 0;
+
+      // uneven timing — stalls and bursts
+      const delays = Array.from({length: NUM_SEGMENTS}, (_, i) =>
+        300 + Math.random() * 500 + (i > 10 ? Math.random() * 600 : 0)
+      );
+
+      function lightNext() {
+        if (current >= NUM_SEGMENTS) {
+          scanned.add(id);
+          srsBtn.style.display = 'none';
+          const srsDiv = entry.querySelector('.contact-srs');
+          if (srsDiv) srsDiv.classList.remove('unscanned');
+          return;
+        }
+        segments[current].classList.add('lit');
+        current++;
+        setTimeout(lightNext, delays[current - 1]);
+      }
+      lightNext();
+    });
+  }
+
   signalsList.appendChild(entry);
   requestAnimationFrame(() => requestAnimationFrame(() => entry.classList.add('visible')));
   activateContact(id);

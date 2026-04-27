@@ -82,6 +82,10 @@ function makeContactNode(body) {
             .map(([k, v]) => `<span class="contact-metric"><span class="metric-label">${k}</span><span>${v}</span></span>`)
             .join('') : ''}
         </div>` : ''}
+
+        ${body.srs ? `<div class="contact-srs">
+          <span class="metric-label">SRS RESULTS</span> <span>${body.srs}</span>
+        </div>` : ''}
     `;
 
     return entry;
