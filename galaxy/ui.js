@@ -16,6 +16,7 @@ const closeBtn   = document.getElementById('info-close');
 const nameEl     = document.getElementById('info-name');
 const quadrantEl = document.getElementById('info-quadrant');
 const sectorEl   = document.getElementById('info-sector');
+const coordsEl   = document.getElementById('info-coords');
 const factionEl  = document.getElementById('info-faction');
 const datafileEl = document.getElementById('info-datafile');
 const overlay        = document.getElementById('overlay');
@@ -38,6 +39,7 @@ export function showInfoPanel(onClose) {
   nameEl.textContent     = sys.name ?? '—';
   quadrantEl.textContent = sys.quadrantName ?? '—';
   sectorEl.textContent   = sys.sectorName   ?? '—';
+  coordsEl.textContent   = `${sys.x}, ${sys.y}` ?? '—';
   factionEl.textContent  = sys.faction       ?? '—';
 
   datafileEl.innerHTML = '';
