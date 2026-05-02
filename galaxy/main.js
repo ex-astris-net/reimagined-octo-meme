@@ -11,7 +11,7 @@ import { initViewport }                       from './viewport.js';
 import { initControls }                           from './controls.js';
 import { showLoading, hideLoading, showError,
          showInfoPanel, hideInfoPanel,
-         initLegend }                         from './ui.js';
+         initLegend, renderLegend }                         from './ui.js';
 
 // ── DOM refs ─────────────────────────────────────────────────────────────────
 const canvas    = document.getElementById('grid-canvas');
@@ -83,7 +83,7 @@ async function init() {
   initViewport(container, redraw, onSystemClick);
 
   // 5. Init control box
-  initControls(redraw);
+  initControls(redraw, () => renderLegend(legendEl));
 
   // 6. Load data — enforce a minimum display time so the LCARS animation gets to breathe
   showLoading();

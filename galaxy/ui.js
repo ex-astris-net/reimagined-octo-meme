@@ -2,7 +2,13 @@
 // Manages all DOM UI outside the canvas/SVG: info panel, legend, load state.
 // No rendering logic — that lives in grid.js and markers.js.
 
-import { getSelectedSystem } from './state.js';
+import { getSelectedSystem, getColorMode } from './state.js';
+import {
+  SYSTEM_TYPES,
+  FACTION_COLORS, FACTION_COLOR_DEFAULT,
+  TYPE_COLORS,   TYPE_COLOR_DEFAULT,
+} from './config.js';
+
 
 // ── DOM refs (resolved once) ─────────────────────────────────────────────────
 const panel      = document.getElementById('info-panel');
@@ -23,45 +29,34 @@ const overlayMessage = document.getElementById('overlay-message');
 
 // ── Info panel ───────────────────────────────────────────────────────────────
 
-// Keep track of the current close listener so we can remove it before re-adding.
 let _closeListener = null;
 
-/**
- * Show the info panel for the currently selected system.
- * Call after state.selectedSystemId has been updated.
- *
- * @param {() => void} onClose  - called when user closes panel (deselect + redraw)
- */
 export function showInfoPanel(onClose) {
   const sys = getSelectedSystem();
   if (!sys) { hideInfoPanel(); return; }
 
-  // Populate fields
   nameEl.textContent     = sys.name ?? '—';
   quadrantEl.textContent = sys.quadrantName ?? '—';
   sectorEl.textContent   = sys.sectorName   ?? '—';
   factionEl.textContent  = sys.faction       ?? '—';
 
-  // Datafile: show as "domain.tld" linked text, or '—'
   datafileEl.innerHTML = '';
   if (sys.url) {
     try {
       const hostname = new URL(sys.url).hostname;
-      const display  = hostname;
       const a        = document.createElement('a');
       a.href         = sys.url;
       a.target       = '_blank';
       a.rel          = 'noopener noreferrer';
-      a.textContent  = display;
+      a.textContent  = hostname;
       datafileEl.appendChild(a);
     } catch {
-      datafileEl.textContent = sys.url; // fallback if URL is malformed
+      datafileEl.textContent = sys.url;
     }
   } else {
     datafileEl.textContent = '—';
   }
 
-  // Wire close button (remove previous listener first to avoid stacking)
   if (_closeListener) closeBtn.removeEventListener('click', _closeListener);
   _closeListener = onClose;
   closeBtn.addEventListener('click', _closeListener);
@@ -151,48 +146,60 @@ export function showError(msg) {
 
 // ── Legend ────────────────────────────────────────────────────────────────────
 
-const LEGEND_ITEMS = [
-  {
-    label: 'Star System',
-    // 4-pointed star with concave bezier sides, matching makeStar
-    svg: `<svg width="14" height="14" viewBox="0 0 14 14" xmlns="http://www.w3.org/2000/svg">
-            <path d="M 7,1 C 9.3,4.3 9.3,4.3 13,7 C 9.3,9.7 9.3,9.7 7,13 C 4.7,9.7 4.7,9.7 1,7 C 4.7,4.3 4.7,4.3 7,1 Z"
-                  fill="none" stroke="#c8d8e8" stroke-width="1.5" stroke-linejoin="round"/>
-          </svg>`,
-  },
-  {
-    label: 'Facility',
-    // Downward triangle
-    svg: `<svg width="14" height="14" viewBox="0 0 14 14" xmlns="http://www.w3.org/2000/svg">
-            <polygon points="7,13 1,2 13,2" fill="none" stroke="#c8d8e8" stroke-width="1.5"/>
-          </svg>`,
-  },
-  {
-    label: 'Point of Interest',
-    // Circle
-    svg: `<svg width="14" height="14" viewBox="0 0 14 14" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="7" cy="7" r="5" fill="none" stroke="#c8d8e8" stroke-width="1.5"/>
-          </svg>`,
-  },
-  {
-    label: 'Unexplored',
-    // Square
-    svg: `<svg width="14" height="14" viewBox="0 0 14 14" xmlns="http://www.w3.org/2000/svg">
-            <rect x="2" y="2" width="10" height="10" fill="none" stroke="#c8d8e8" stroke-width="1.5"/>
-          </svg>`,
-  },
-];
+function swatchSvg(shape, color) {
+  const sw = 1.5;
+  let inner;
 
-/**
- * Render the legend once on startup.
- * @param {HTMLElement} legendEl
- */
-export function initLegend(legendEl) {
+  switch (shape) {
+    case 'diamond': {
+      const s = 5, c = s * 0.38;
+      inner = `<path d="M 7,${7-s} C ${7+c},${7-c} ${7+c},${7-c} ${7+s},7 C ${7+c},${7+c} ${7+c},${7+c} 7,${7+s} C ${7-c},${7+c} ${7-c},${7+c} ${7-s},7 C ${7-c},${7-c} ${7-c},${7-c} 7,${7-s} Z"
+               fill="none" stroke="${color}" stroke-width="${sw}" stroke-linejoin="round"/>`;
+      break;
+    }
+    case 'triangle':
+      inner = `<polygon points="7,12 2,3 12,3" fill="none" stroke="${color}" stroke-width="${sw}"/>`;
+      break;
+    case 'square':
+      inner = `<rect x="2" y="2" width="10" height="10" fill="none" stroke="${color}" stroke-width="${sw}"/>`;
+      break;
+    case 'circle':
+    default:
+      inner = `<circle cx="7" cy="7" r="5" fill="none" stroke="${color}" stroke-width="${sw}"/>`;
+      break;
+  }
+
+  return `<svg width="14" height="14" viewBox="0 0 14 14" xmlns="http://www.w3.org/2000/svg">${inner}</svg>`;
+}
+
+function getLegendItems(colorMode) {
+  if (colorMode === 'faction') {
+    const items = Object.entries(FACTION_COLORS)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([faction, color]) => ({
+        label: faction,
+        svg:   swatchSvg('circle', color),
+      }));
+    items.push({ label: 'Other / Unknown', svg: swatchSvg('circle', FACTION_COLOR_DEFAULT) });
+    return items;
+  }
+
+  // colorMode === 'type': iterate SYSTEM_TYPES so order and labels are canonical
+  return Object.entries(SYSTEM_TYPES).map(([typeName, shape]) => ({
+    label: typeName,
+    svg:   swatchSvg(shape, TYPE_COLORS[typeName] ?? TYPE_COLOR_DEFAULT),
+  }));
+}
+
+export function renderLegend(legendEl) {
+  const items = getLegendItems(getColorMode());
   legendEl.innerHTML = '';
-  for (const { label, svg } of LEGEND_ITEMS) {
+  for (const { label, svg } of items) {
     const item = document.createElement('div');
     item.className = 'legend-item';
     item.innerHTML = `${svg}<span>${label}</span>`;
     legendEl.appendChild(item);
   }
 }
+
+export const initLegend = renderLegend;

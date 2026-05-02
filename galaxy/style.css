@@ -108,6 +108,13 @@ body {
   gap: 0.5rem;
 }
 
+.ctrl-row { text-align: right; }
+
+#ctrl-cursor {
+  text-transform: uppercase;
+  font-size: 0.8em;
+}
+
 @media (max-width: 600px) {
   #legend { display: none; }
 }
