@@ -4,14 +4,20 @@
 
 import { loadData }                          from './data.js';
 import { setData, setLoadError, getViewport,
-         setSelectedId, getSelectedId }       from './state.js';
+         setSelectedId, getSelectedId,
+         getSelectedSystem,
+         setStarships, setPositionedShips,
+         getPositionedShips,
+         setSelectedShipId }                 from './state.js';
 import { drawGrid }                           from './grid.js';
 import { initMarkerGroups, drawMarkers }      from './markers.js';
+import { initShipGroup, loadShipPositions,
+         drawShips }                          from './ships.js';
 import { initViewport }                       from './viewport.js';
-import { initControls }                           from './controls.js';
+import { initControls }                       from './controls.js';
 import { showLoading, hideLoading, showError,
          showInfoPanel, hideInfoPanel,
-         initLegend, renderLegend }                         from './ui.js';
+         initLegend, renderLegend }           from './ui.js';
 
 // ── DOM refs ─────────────────────────────────────────────────────────────────
 const canvas    = document.getElementById('grid-canvas');
@@ -31,11 +37,9 @@ function resizeCanvas() {
   canvas.style.width  = w + 'px';
   canvas.style.height = h + 'px';
 
-  // SVG lives in CSS pixels — no DPR scaling needed
   svg.setAttribute('width',  w);
   svg.setAttribute('height', h);
 
-  // Scale all canvas drawing to match physical pixels
   ctx.scale(dpr, dpr);
   redraw();
 }
@@ -43,7 +47,7 @@ function resizeCanvas() {
 window.addEventListener('resize', resizeCanvas);
 
 // ── Render loop ───────────────────────────────────────────────────────────────
-let markerGroup, labelGroup;
+let markerGroup, labelGroup, shipGroup;
 
 function redraw() {
   const viewport = getViewport();
@@ -51,14 +55,62 @@ function redraw() {
   if (markerGroup && labelGroup) {
     drawMarkers(markerGroup, labelGroup, viewport);
   }
+  if (shipGroup) {
+    drawShips(shipGroup, getPositionedShips(), viewport);
+  }
+}
+
+// ── Info panel helpers ────────────────────────────────────────────────────────
+
+function systemRows(sys) {
+  return [
+    { label: 'Quadrant', value: sys.quadrantName },
+    { label: 'Sector',   value: sys.sectorName   },
+    { label: 'Coords',   value: `${sys.x}, ${sys.y}` },
+    { label: 'Faction',  value: sys.faction       },
+    { label: 'Datafile', value: sys.url           },
+  ];
+}
+
+function shipRows(ship) {
+  const pos = ship.position;
+  const position = pos
+    ? `${pos.quadrant} / ${pos.sector} / ${pos.x.toFixed(2)}, ${pos.y.toFixed(2)}`
+    : '—';
+  return [
+    { label: 'Serial',   value: ship.serial    },
+    { label: 'Class',    value: ship.shipClass  },
+    { label: 'Contact',  value: ship.contact    },
+    { label: 'Position', value: position        },
+    { label: 'Info',     value: ship.infoUrl    },
+  ];
 }
 
 // ── Interaction callbacks ─────────────────────────────────────────────────────
+
 function onSystemClick(id) {
   setSelectedId(id);
+  setSelectedShipId(null); // deselect any ship
   if (id) {
-    showInfoPanel(() => {
+    const sys = getSelectedSystem();
+    if (!sys) return;
+    showInfoPanel(sys.name, systemRows(sys), () => {
       setSelectedId(null);
+      hideInfoPanel();
+      redraw();
+    });
+  } else {
+    hideInfoPanel();
+  }
+  redraw();
+}
+
+function onShipClick(ship) {
+  setSelectedShipId(ship ? ship.id : null);
+  setSelectedId(null); // deselect any system
+  if (ship) {
+    showInfoPanel(ship.name, shipRows(ship), () => {
+      setSelectedShipId(null);
       hideInfoPanel();
       redraw();
     });
@@ -70,22 +122,15 @@ function onSystemClick(id) {
 
 // ── Bootstrap ─────────────────────────────────────────────────────────────────
 async function init() {
-  // 1. Size canvas to container
   resizeCanvas();
 
-  // 2. Init SVG marker groups
   ({ markerGroup, labelGroup } = initMarkerGroups(svg));
+  shipGroup = initShipGroup(svg);
 
-  // 3. Init legend
   initLegend(legendEl);
-
-  // 4. Attach viewport controls
-  initViewport(container, redraw, onSystemClick);
-
-  // 5. Init control box
+  initViewport(container, redraw, onSystemClick, onShipClick);
   initControls(redraw, () => renderLegend(legendEl));
 
-  // 6. Load data — enforce a minimum display time so the LCARS animation gets to breathe
   showLoading();
   const MIN_LOADING_MS = 2500;
   try {
@@ -94,7 +139,14 @@ async function init() {
       new Promise(resolve => setTimeout(resolve, MIN_LOADING_MS)),
     ]);
     console.log(data);
+
     setData(data);
+    setStarships(data.starships);
+
+    const positioned = await loadShipPositions();
+    setPositionedShips(positioned);
+    console.log(`[main] ${positioned.length} ship(s) positioned`);
+
     hideLoading();
     redraw();
   } catch (err) {

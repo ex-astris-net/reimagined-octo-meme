@@ -2,7 +2,7 @@
 // Manages all DOM UI outside the canvas/SVG: info panel, legend, load state.
 // No rendering logic — that lives in grid.js and markers.js.
 
-import { getSelectedSystem, getColorMode } from './state.js';
+import { getColorMode } from './state.js';
 import {
   SYSTEM_TYPES,
   FACTION_COLORS, FACTION_COLOR_DEFAULT,
@@ -11,14 +11,10 @@ import {
 
 
 // ── DOM refs (resolved once) ─────────────────────────────────────────────────
-const panel      = document.getElementById('info-panel');
-const closeBtn   = document.getElementById('info-close');
-const nameEl     = document.getElementById('info-name');
-const quadrantEl = document.getElementById('info-quadrant');
-const sectorEl   = document.getElementById('info-sector');
-const coordsEl   = document.getElementById('info-coords');
-const factionEl  = document.getElementById('info-faction');
-const datafileEl = document.getElementById('info-datafile');
+const panel    = document.getElementById('info-panel');
+const closeBtn = document.getElementById('info-close');
+const nameEl   = document.getElementById('info-name');
+const fieldsEl = document.getElementById('info-fields');
 const overlay        = document.getElementById('overlay');
 const lcarsLoader    = document.getElementById('lcars-loader');
 const lcarsStatus    = document.getElementById('lcars-status');
@@ -32,31 +28,42 @@ const overlayMessage = document.getElementById('overlay-message');
 
 let _closeListener = null;
 
-export function showInfoPanel(onClose) {
-  const sys = getSelectedSystem();
-  if (!sys) { hideInfoPanel(); return; }
-
-  nameEl.textContent     = sys.name ?? '—';
-  quadrantEl.textContent = sys.quadrantName ?? '—';
-  sectorEl.textContent   = sys.sectorName   ?? '—';
-  coordsEl.textContent   = `${sys.x}, ${sys.y}` ?? '—';
-  factionEl.textContent  = sys.faction       ?? '—';
-
-  datafileEl.innerHTML = '';
-  if (sys.url) {
+/**
+ * Render a link <dd> or plain text <dd>.
+ */
+function makeValueEl(value) {
+  const dd = document.createElement('dd');
+  if (value && typeof value === 'string' && value.startsWith('http')) {
     try {
-      const hostname = new URL(sys.url).hostname;
-      const a        = document.createElement('a');
-      a.href         = sys.url;
-      a.target       = '_blank';
-      a.rel          = 'noopener noreferrer';
-      a.textContent  = hostname;
-      datafileEl.appendChild(a);
-    } catch {
-      datafileEl.textContent = sys.url;
-    }
-  } else {
-    datafileEl.textContent = '—';
+      const a   = document.createElement('a');
+      a.href    = value;
+      a.target  = '_blank';
+      a.rel     = 'noopener noreferrer';
+      a.textContent = new URL(value).hostname;
+      dd.appendChild(a);
+      return dd;
+    } catch { /* fall through to plain text */ }
+  }
+  dd.textContent = value || '—';
+  return dd;
+}
+
+/**
+ * Show the info panel with a dynamic set of rows.
+ *
+ * @param {string}                     name    - heading text
+ * @param {{ label: string, value: string }[]} rows - dl rows to render
+ * @param {() => void}                 onClose - called when the ✕ is clicked
+ */
+export function showInfoPanel(name, rows, onClose) {
+  nameEl.textContent = name ?? '—';
+
+  fieldsEl.innerHTML = '';
+  for (const { label, value } of rows) {
+    const dt = document.createElement('dt');
+    dt.textContent = label;
+    fieldsEl.appendChild(dt);
+    fieldsEl.appendChild(makeValueEl(value));
   }
 
   if (_closeListener) closeBtn.removeEventListener('click', _closeListener);

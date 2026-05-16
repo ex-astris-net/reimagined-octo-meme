@@ -28,12 +28,15 @@ async function fetchWithRetry(url, retries = FETCH_RETRIES) {
 // ── Normalisers ──────────────────────────────────────────────────────────────
 
 /**
- * The Lambda returns { quadrants, sectors, systems }.
+ * The Lambda returns { quadrants, sectors, systems, starships }.
  * Each quadrant: { id, name, width, height }
  * Each sector:   { id, name, quadrantId, index }  (a/b may be pre-computed by Lambda)
  * Each system:   { id, name, sectorId, quadrantName, a, b, x, y, type, url, faction }
+ * Each starship: { id, name, serial, contact, tokenUrl, routeDocUrl }
  *
  * We attach gx/gy to every system here.
+ * Starships are returned as-is; gx/gy is resolved later in ships.js after
+ * the route docs are fetched.
  */
 function normaliseSystems(systems) {
   return systems.map(sys => {
@@ -66,7 +69,7 @@ function normaliseSectors(sectors, quadrants) {
 
 /**
  * Load all map data.
- * @returns {{ quadrants, sectors, systems }}
+ * @returns {{ quadrants, sectors, systems, starships }}
  * @throws on unrecoverable fetch failure
  */
 export async function loadData() {
@@ -74,6 +77,7 @@ export async function loadData() {
   const quadrants = raw.quadrants ?? [];
   const sectors   = normaliseSectors(raw.sectors ?? [], quadrants);
   const systems   = normaliseSystems(raw.systems ?? []);
+  const starships = raw.starships ?? [];
 
-  return { quadrants, sectors, systems };
+  return { quadrants, sectors, systems, starships };
 }

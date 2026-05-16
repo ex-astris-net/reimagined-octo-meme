@@ -3,7 +3,12 @@
 // Mutates state via setZoom / setOffset, then calls the provided redraw callback.
 
 import { DRAG_THRESHOLD_PX } from './config.js';
-import { setZoom, setOffset, getViewport, getData, setHoveredId, getHoveredId } from './state.js';
+import {
+  setZoom, setOffset, getViewport, getData,
+  setHoveredId, getHoveredId,
+  setHoveredShipId, getHoveredShipId,
+  getPositionedShips,
+} from './state.js';
 import { galaxyToScreen } from './coords.js';
 
 // ── Zoom limits ───────────────────────────────────────────────────────────────
@@ -11,17 +16,30 @@ const ZOOM_MIN = 0.25;
 const ZOOM_MAX = 12;
 const ZOOM_SPEED = 0.0012; // per wheel delta-pixel
 
+// ── Hit radii ─────────────────────────────────────────────────────────────────
+const HIT_RADIUS_PX      = 16;
+const SHIP_HIT_RADIUS_PX = 20;
+
 // ── Hit-test: find topmost system within a pixel radius of a screen point ─────
-const HIT_RADIUS_PX = 16;
 
 function systemAtScreen(sx, sy, viewport) {
   const { systems } = getData();
   const { zoom, offsetX, offsetY } = viewport;
-  // Iterate in reverse so markers drawn last (on top) win ties
   for (let i = systems.length - 1; i >= 0; i--) {
     const sys = systems[i];
     const { sx: mx, sy: my } = galaxyToScreen(sys.gx, sys.gy, zoom, offsetX, offsetY);
     if (Math.hypot(sx - mx, sy - my) <= HIT_RADIUS_PX) return sys;
+  }
+  return null;
+}
+
+function shipAtScreen(sx, sy, viewport) {
+  const ships = getPositionedShips();
+  const { zoom, offsetX, offsetY } = viewport;
+  for (let i = ships.length - 1; i >= 0; i--) {
+    const ship = ships[i];
+    const { sx: mx, sy: my } = galaxyToScreen(ship.gx, ship.gy, zoom, offsetX, offsetY);
+    if (Math.hypot(sx - mx, sy - my) <= SHIP_HIT_RADIUS_PX) return ship;
   }
   return null;
 }
@@ -38,7 +56,7 @@ function clamp(v, min, max) { return Math.min(max, Math.max(min, v)); }
  * @param {() => void}  onRedraw    - called whenever the viewport changes
  * @param {(id: string|null) => void} onSystemClick - called with system id (or null)
  */
-export function initViewport(container, onRedraw, onSystemClick) {
+export function initViewport(container, onRedraw, onSystemClick, onShipClick) {
 
   // ── Mouse pan + click ───────────────────────────────────────────────────────
   let dragging   = false;
@@ -56,16 +74,26 @@ export function initViewport(container, onRedraw, onSystemClick) {
 
   window.addEventListener('mousemove', e => {
     if (!dragging) {
-      // Hover hit-test
+      // Hover hit-test — systems and ships independently
       const rect = container.getBoundingClientRect();
       const sx = e.clientX - rect.left;
       const sy = e.clientY - rect.top;
-      const hit = systemAtScreen(sx, sy, getViewport());
-      const newId = hit ? hit.id : null;
-      if (newId !== getHoveredId()) {
-        setHoveredId(newId);
+      const vp = getViewport();
+
+      const hitSystem = systemAtScreen(sx, sy, vp);
+      const newSystemId = hitSystem ? hitSystem.id : null;
+      if (newSystemId !== getHoveredId()) {
+        setHoveredId(newSystemId);
         onRedraw();
       }
+
+      const hitShip = shipAtScreen(sx, sy, vp);
+      const newShipId = hitShip ? hitShip.id : null;
+      if (newShipId !== getHoveredShipId()) {
+        setHoveredShipId(newShipId);
+        onRedraw();
+      }
+
       return;
     }
 
@@ -88,12 +116,18 @@ export function initViewport(container, onRedraw, onSystemClick) {
     dragging = false;
 
     if (!dragMoved) {
-      // Treat as a click
+      // Treat as a click — ships take priority since they render on top
       const rect = container.getBoundingClientRect();
       const sx = e.clientX - rect.left;
       const sy = e.clientY - rect.top;
-      const hit = systemAtScreen(sx, sy, getViewport());
-      onSystemClick(hit ? hit.id : null);
+      const vp = getViewport();
+      const hitShip = shipAtScreen(sx, sy, vp);
+      if (hitShip) {
+        onShipClick(hitShip);
+      } else {
+        const hitSystem = systemAtScreen(sx, sy, vp);
+        onSystemClick(hitSystem ? hitSystem.id : null);
+      }
     }
   });
 
@@ -192,12 +226,18 @@ export function initViewport(container, onRedraw, onSystemClick) {
   container.addEventListener('touchend', e => {
     e.preventDefault();
     if (!touchDragMoved && lastTouches.length === 1) {
-      // Tap — treat as click
+      // Tap — ships take priority since they render on top
       const rect = container.getBoundingClientRect();
       const sx = lastTouches[0].clientX - rect.left;
       const sy = lastTouches[0].clientY - rect.top;
-      const hit = systemAtScreen(sx, sy, getViewport());
-      onSystemClick(hit ? hit.id : null);
+      const vp = getViewport();
+      const hitShip = shipAtScreen(sx, sy, vp);
+      if (hitShip) {
+        onShipClick(hitShip);
+      } else {
+        const hitSystem = systemAtScreen(sx, sy, vp);
+        onSystemClick(hitSystem ? hitSystem.id : null);
+      }
     }
     lastTouches = Array.from(e.touches);
   }, { passive: false });

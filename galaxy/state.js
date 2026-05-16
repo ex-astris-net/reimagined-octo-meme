@@ -4,25 +4,29 @@
 
 const _state = {
   // ── Viewport ─────────────────────────────────────────────────────────────
-  zoom:    1,       // current zoom multiplier
-  offsetX: 0,      // canvas pan offset in pixels (screen coords)
+  zoom:    1,
+  offsetX: 0,
   offsetY: 0,
 
   // ── Data ─────────────────────────────────────────────────────────────────
-  quadrants: [],   // raw quadrant records from API
-  sectors:   [],   // raw sector records from API
-  systems:   [],   // processed system records (with gx, gy attached)
+  quadrants:       [],
+  sectors:         [],
+  systems:         [],
+  starships:       [],   // raw starship records from API
+  positionedShips: [],   // enriched ships with gx/gy resolved from route docs
 
   // ── UI ────────────────────────────────────────────────────────────────────
-  selectedSystemId: null,   // Airtable record ID of clicked system, or null
-  hoveredSystemId:  null,   // record ID under cursor, or null
+  selectedSystemId: null,
+  hoveredSystemId:  null,
+  selectedShipId:   null,
+  hoveredShipId:    null,
   dataLoaded:       false,
-  loadError:        null,   // string | null
+  loadError:        null,
 
   // ── Controls ─────────────────────────────────────────────────────────────
-  searchQuery:    '',       // lowercased search string, '' = no filter
-  colorMode:      'type',   // 'type' | 'faction'
-  showNonCanon:   true,     // if false, non-canon systems are hidden
+  searchQuery:  '',
+  colorMode:    'type',
+  showNonCanon: true,
 };
 
 // ── Viewport ────────────────────────────────────────────────────────────────
@@ -33,22 +37,33 @@ export function setOffset(x, y)       { _state.offsetX = x; _state.offsetY = y; 
 // ── Data ────────────────────────────────────────────────────────────────────
 export function getData()             { return { quadrants: _state.quadrants, sectors: _state.sectors, systems: _state.systems }; }
 export function setData({ quadrants, sectors, systems }) {
-  _state.quadrants = quadrants;
-  _state.sectors   = sectors;
-  _state.systems   = systems;
+  _state.quadrants  = quadrants;
+  _state.sectors    = sectors;
+  _state.systems    = systems;
   _state.dataLoaded = true;
 }
 export function isDataLoaded()        { return _state.dataLoaded; }
 export function setLoadError(msg)     { _state.loadError = msg; }
 export function getLoadError()        { return _state.loadError; }
 
-// ── Selection / hover ────────────────────────────────────────────────────────
+// ── Starships ────────────────────────────────────────────────────────────────
+export function getStarships()            { return _state.starships; }
+export function setStarships(ships)       { _state.starships = ships; }
+export function getPositionedShips()      { return _state.positionedShips; }
+export function setPositionedShips(ships) { _state.positionedShips = ships; }
+
+// ── System selection / hover ─────────────────────────────────────────────────
 export function getSelectedId()       { return _state.selectedSystemId; }
 export function setSelectedId(id)     { _state.selectedSystemId = id; }
 export function getHoveredId()        { return _state.hoveredSystemId; }
 export function setHoveredId(id)      { _state.hoveredSystemId = id; }
 
-// ── Convenience ──────────────────────────────────────────────────────────────
+// ── Ship selection / hover ───────────────────────────────────────────────────
+export function getSelectedShipId()   { return _state.selectedShipId; }
+export function setSelectedShipId(id) { _state.selectedShipId = id; }
+export function getHoveredShipId()    { return _state.hoveredShipId; }
+export function setHoveredShipId(id)  { _state.hoveredShipId = id; }
+
 // ── Controls ────────────────────────────────────────────────────────────────
 export function getSearchQuery()      { return _state.searchQuery; }
 export function setSearchQuery(q)     { _state.searchQuery = q; }
@@ -57,7 +72,7 @@ export function setColorMode(m)       { _state.colorMode = m; }
 export function getShowNonCanon()     { return _state.showNonCanon; }
 export function setShowNonCanon(v)    { _state.showNonCanon = v; }
 
-/** Return the full system record for the currently selected ID, or null. */
+// ── Convenience ──────────────────────────────────────────────────────────────
 export function getSelectedSystem() {
   if (!_state.selectedSystemId) return null;
   return _state.systems.find(s => s.id === _state.selectedSystemId) ?? null;
