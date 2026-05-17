@@ -47,7 +47,7 @@ function resizeCanvas() {
 window.addEventListener('resize', resizeCanvas);
 
 // ── Render loop ───────────────────────────────────────────────────────────────
-let markerGroup, labelGroup, shipGroup;
+let markerGroup, labelGroup, shipMarkerGroup, shipLabelGroup;
 
 function redraw() {
   const viewport = getViewport();
@@ -55,8 +55,8 @@ function redraw() {
   if (markerGroup && labelGroup) {
     drawMarkers(markerGroup, labelGroup, viewport);
   }
-  if (shipGroup) {
-    drawShips(shipGroup, getPositionedShips(), viewport);
+  if (shipMarkerGroup && shipLabelGroup) {
+    drawShips(shipMarkerGroup, shipLabelGroup, getPositionedShips(), viewport);
   }
 }
 
@@ -74,15 +74,19 @@ function systemRows(sys) {
 
 function shipRows(ship) {
   const pos = ship.position;
-  const position = pos
-    ? `${pos.quadrant} / ${pos.sector} / ${pos.x.toFixed(2)}, ${pos.y.toFixed(2)}`
-    : '—';
+  let position = '—';
+  if (pos) {
+    position = pos.system
+      ? `${pos.quadrant} / ${pos.sector} / ${pos.system}`
+      : `${pos.quadrant} / ${pos.sector} / ${pos.x.toFixed(2)}, ${pos.y.toFixed(2)}`;
+  }
   return [
     { label: 'Serial',   value: ship.serial    },
     { label: 'Class',    value: ship.shipClass  },
-    { label: 'Contact',  value: ship.contact    },
+    { label: 'Faction',  value: ship.faction    },
     { label: 'Position', value: position        },
     { label: 'Info',     value: ship.infoUrl    },
+    { label: 'Contact',  value: ship.contact    },
   ];
 }
 
@@ -125,7 +129,7 @@ async function init() {
   resizeCanvas();
 
   ({ markerGroup, labelGroup } = initMarkerGroups(svg));
-  shipGroup = initShipGroup(svg);
+  ({ shipMarkerGroup, shipLabelGroup } = initShipGroup(svg));
 
   initLegend(legendEl);
   initViewport(container, redraw, onSystemClick, onShipClick);
