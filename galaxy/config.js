@@ -48,7 +48,8 @@ export const SYSTEM_TYPES = {
 // ── Faction colors ────────────────────────────────────────────────────────
 export const FACTION_COLORS = {
   'United Federation of Planets': '#4a90d9',
-  'Romulan Republic':             '#4caf7d',
+  'Romulan Republic':             '#1ab600',
+  'Romulan Star Empire':          '#74cfbc',
   'Klingon Empire':               '#c0392b',
   'Dominion':                     '#9b59b6',
   'Independent':                  '#d4c87a',
