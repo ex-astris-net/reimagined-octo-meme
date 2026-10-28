@@ -1,9 +1,13 @@
 // config.js
 // All static constants. Nothing here should change at runtime.
 
-// ── Lambda endpoint ────────────────────────────────────────────────────────
-export const LAMBDA_URL =
-  'https://9xo769s5o3.execute-api.us-west-2.amazonaws.com/default/galaxy-map-airtable';
+// ── Google Sheets CSV endpoints ────────────────────────────────────────────
+const SHEETS_BASE = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSipWPTqiDPUrVxrtBgDuVp7gftLHY_jE24WJ12EmRheVktzEJ-pqpT7x2bRKf_jGihQhpiKQKo0_-_/pub';
+
+export const SHEETS_QUADRANTS_URL = `${SHEETS_BASE}?gid=0&single=true&output=csv`;
+export const SHEETS_SECTORS_URL   = `${SHEETS_BASE}?gid=1330098230&single=true&output=csv`;
+export const SHEETS_SYSTEMS_URL   = `${SHEETS_BASE}?gid=452719928&single=true&output=csv`;
+export const SHEETS_STARSHIPS_URL = `${SHEETS_BASE}?gid=1283687581&single=true&output=csv`;
 
 // ── Rendering constants ────────────────────────────────────────────────────
 export const BASE_PX_PER_LY   = 8;   // pixels per light-year at zoom 1
@@ -48,8 +52,7 @@ export const SYSTEM_TYPES = {
 // ── Faction colors ────────────────────────────────────────────────────────
 export const FACTION_COLORS = {
   'United Federation of Planets': '#4a90d9',
-  'Romulan Republic':             '#1ab600',
-  'Romulan Star Empire':          '#74cfbc',
+  'Romulan Republic':             '#4caf7d',
   'Klingon Empire':               '#c0392b',
   'Dominion':                     '#9b59b6',
   'Independent':                  '#d4c87a',
